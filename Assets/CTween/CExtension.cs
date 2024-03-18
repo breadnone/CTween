@@ -712,7 +712,7 @@ namespace CompactTween
         /// <param name="rectTransform">RectTransform to resize.</param>
         /// <param name="to">Target.</param>
         /// <param name="duration">Duration.</param>
-        public static CoreTween sizeDelta(RectTransform rectTransform, Vector3 to, float duration)
+        public static CoreTween sizeDelta(RectTransform rectTransform, Vector2 to, float duration)
         {
             var dummy = new CoreTween();
             CTcore.InstantiateVector(rectTransform, rectTransform.sizeDelta, to, duration, LerpCoreType.SizeDelta, false, out int index);

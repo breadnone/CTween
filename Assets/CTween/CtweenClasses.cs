@@ -151,7 +151,7 @@ namespace CompactTween.Extension
 
                 for (int i = 0; i < newarr.Length; i++)
                 {
-                    if (i < fcore.Length)
+                    if (i < count)
                     {
                         newarr[i] = fcore[i];
                         newobjs[i].AssignObjects(ctobjects[i].GetObjects.transform, ctobjects[i].GetObjects.invoke);
