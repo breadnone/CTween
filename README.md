@@ -280,6 +280,12 @@ CTween.CancelFirst(go);
 //Cancels multiple tweens that's tied to the same gameObject.
 CTween.CancelMany(go);
 
+//Canceling queues. Queues are special and must be cancelled via it's built-in method (TryCancelQueues())
+//cache the instance
+var ct = CTween.move(mov.transform, target.transform.position, duration).next(CTween.move(mov.transform, defPos, duration)).onEase(ease);
+//Cancel with the built-in method.
+ct.TryCancelQueues();
+
 ```
 
 ## Combine  
