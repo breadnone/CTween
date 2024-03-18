@@ -177,4 +177,4 @@ To combine you must use curves based tweening for move commands (the rest can be
 Reason being it's more performant than combining multiple interpolations at once and due to this library is meant to be fast and lightweight.   
 
 ## STween vs CTween  
-STween is packed with lots of features such as edit-mode support, built-in mono components, pooling, etc and more robust APIs and highly extensible, while CTween is meant to be fast and compact and with less bloats.  
+STween is packed with lots of features such as edit-mode support, built-in mono components, pooling, etc and more robust APIs and highly extensible, while CTween is meant to be fast and compact and with less bloats and to avoid the preallocated objects in memory (no pooling, just structs).  
