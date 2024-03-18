@@ -171,7 +171,88 @@ CTween.shaderFloat(material, Vector4.zero, new Vector4(12f, 23f, 90f, `11f), 3f)
 //description : Queues or chain a sequence of tweens.
 CTween.moveX(go.transform, 100f, 5f).next(CTween.moveY(go.transform, 90f, 2f));
 ```
+## Properties : Chainable properties
+```
+//.onLoopCount(int loopCount);
+//description : Sets how many loop cycle for the tween to complete.
 
+//.onPingPong(bool state);
+//description : Pingpong loop cycle instead of linear.
+
+//.onSpeed();
+//description : Speed based tweening.
+
+//.onLoopType(LoopType type);
+//description : Clamp or pingPong loop mode.
+
+//.onComplete(Action callback);
+//description : Invoked once the tween has completed.
+
+//.onCompleteRepeat(bool state);
+//description : Triggers the onComplete callback on each loop cycle completion.
+
+//.onEase(Ease ease);
+//description : Easing function type.
+
+//.onUnscaledTime(bool state);
+//description : Unscaledtime state. Default is false.
+
+//.onUpdate(Action callback);
+//description : Invoked every frame while tweening.
+
+//.onLookAt(Transform transform, bool instant, float speed)
+//description : Focus on a transform while tweening.
+
+//.onDestroyOnComplete(bool state);
+//description : Destroys the gameObject once finished tweening.
+
+//.onCompleteActive(bool state)
+//description : Active state of a gameObject once finished tweening.
+
+//.onSetFrom(Vector3 direction, float angle);
+//description : Sets the initial rotation of a tween instance.
+
+///onSetFrom(Vector3 from)
+//description : Sets the inital point of a tween instance.
+
+//.onInfinite(bool state);
+//description : Infinitely tweening.
+
+//.onEndPlayAudio(AudioSource auSource);
+//description : Plays an audio once done tweening.
+
+//.onDelay(float delayInSeconds);
+//description : Delays the execution of a tween.
+
+```
+## Curves
+```
+//Moves along quadratic curves in world space.
+CTween.curve(go.transform, new Vector3(100f, 200f, 250f), new Vector3(150f, 350f, 250f), duration: 5f, lookAtDirection: true);
+
+//Moves along quadratic curves in localSpace.
+CTween.curveLocal(go.transform, new Vector3(100f, 200f, 250f), new Vector3(150f, 350f, 250f), duration: 5f, lookAtDirection: true);
+
+//Moves along bezier curves in world space.
+CTween.bezier(go.transform, MyPointList, 5f);
+
+//Moves along bezier curves in localSpace.
+CTween.bezierLocal(go.transform, MyPointList, 5f);
+```
+
+## Asynchronous Tweening
+```
+IEnumerator WaitTween()
+{
+   yield return CTween.move(go.transform, new Vector3(120f, 23f, 50f), 5f).AsCoroutine();
+}
+
+async Task WaitTaskTween()
+{
+   await CTween.move(go.transform, new Vector3(120f, 23f, 50f), 5f).AsTask();
+}
+
+```
 ## Combine  
 To combine you must use curves based tweening for move commands (the rest can be combined as is).   
 Reason being it's more performant than combining multiple interpolations at once and due to this library is meant to be fast and lightweight.   
