@@ -2,8 +2,7 @@
 A lightweight, thread safe, small & compact tweening library for Unity3D engine. 
 
 ## Performance
-CTween is a compact version of STween which is another zero allocation tweening lib for Unity3D.  
-Internally CTween is 100% struct based to avoid heap allocation and get much better performance compared to regular classes.  
+CTween is a compact version of STween which is another zero allocation tweening lib for Unity3D.    
 
 ## Features :  
 - Move, Rotate, Scale, Value types interpolation (float, Vectors, Matrix4x4, Quaternion, etc).
