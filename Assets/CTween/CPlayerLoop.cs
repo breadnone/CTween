@@ -1,31 +1,53 @@
+/*
+MIT License
+
+created by : Stvp Ric
+
+Copyright(c) 2023
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this
+software and associated documentation files (the "Software"), to deal in the Software
+without restriction, including without limitation the rights to use, copy, modify,
+merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
 using UnityEngine;
 using UnityEngine.LowLevel;
 using UnityEngine.PlayerLoop;
 using System;
 using System.Linq;
 using System.Buffers;
-using CTween.Extension;
+using CompactTween.Extension;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace CTween
+namespace CompactTween
 {
     /// <summary>PlayerLoop class</summary>
     public static class CPlayerLoop
     {
-        public static CTmono mono {get;set;}
+        /// <summary>MonoB singleton.</summary>
+        public static CTmono mono { get; set; }
         public static TimeStruct[] activeCores;
+        /// <summary>Struct pool.</summary>
         static ArrayPool<TimeStruct> staticPool = ArrayPool<TimeStruct>.Shared;
-        static int activecount = 0;
-        static TimeStruct t = new TimeStruct(-1, -1);
-
+        /// <summary>Active tween instances.</summary>
+        public static int activecount = 0;
         public static void InitStaticArray()
         {
             activeCores = staticPool.Rent(CTcore.maxPoolLength);
         }
         public static void WorkerUpdate()
         {
-            if(activecount == 0)
+            if (activecount == 0)
             {
                 return;
             }
@@ -40,50 +62,36 @@ namespace CTween
                 }
             }
 
-            if(activecount == 0 && CTcore.fcore.Length > CTcore.maxPoolLength)
+            if (activecount == 0 && CTcore.fcore.Length > CTcore.maxPoolLength)
             {
                 CTcore.Resize(true);
             }
         }
         public static void InsertToActiveTweens(int index)
         {
-            for (int i = 0; i < activeCores.Length; i++)
-            {
-                if (activeCores[i].index == -1)
-                {
-                    activecount++;
-                    activeCores[i] = new TimeStruct(index, Time.frameCount + 1);
-                    break;
-                }
-            }
+            activecount++;
+            activeCores[index] = new TimeStruct(index, Time.frameCount + 1);
         }
         public static void RemoveFromActiveTweens(int index)
         {
-            GetActiveTween(index).set(-1, -1);
-            activecount--;
-        }
-        
-        public static ref TimeStruct GetActiveTween(int index)
-        {
-            for (int i = 0; i < activeCores.Length; i++)
+            if (index < 0)
             {
-                if (activeCores[i].index == index)
-                {
-                    return ref activeCores[i];
-                }
+                return;
             }
 
-            return ref t;
+            activeCores[index].set(-1, -1);
+            activecount--;
         }
+
         public static void Resize(bool setdefault)
         {
-            if(!setdefault)
+            if (!setdefault)
             {
                 var pool = staticPool.Rent(activeCores.Length * 2);
 
-                for(int i = 0; i < pool.Length; i++)
+                for (int i = 0; i < pool.Length; i++)
                 {
-                    if(i < activeCores.Length)
+                    if (i < activeCores.Length)
                     {
                         pool[i] = activeCores[i];
                     }
@@ -100,8 +108,8 @@ namespace CTween
             {
                 staticPool.Return(activeCores);
                 activeCores = staticPool.Rent(CTcore.maxPoolLength);
-                
-                for(int i = 0; i < activeCores.Length; i++)
+
+                for (int i = 0; i < activeCores.Length; i++)
                 {
                     activeCores[i].set(-1, -1);
                 }

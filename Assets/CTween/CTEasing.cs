@@ -21,11 +21,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using UnityEngine;
 using System.Runtime.CompilerServices;
-using CTween.Extension;
+using CompactTween.Extension;
 using UnityEngine.UIElements;
 using TMPro;
 
-namespace CTween
+namespace CompactTween
 {
     // Clamping the lower bounds of easing functions sort of unnecessary when the value is 0 - 1 range.
     // instead we clamp the upperbound, so it won't miss the target or overshoot.
@@ -45,93 +45,93 @@ namespace CTween
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         //All easings are expecting normalized (0 - 1) value as it's inputs.
-        public static float Linear(float val)
+        static float Linear(float val)
         {
             return 0 + (1 - 0) * clamp1(val);
         }
-        public static float EaseInSine(float val)
+        static float EaseInSine(float val)
         {
             return 1 - Mathf.Cos(val * Mathf.PI * 0.5f);
         }
-        public static float EaseOutSine(float val)
+        static float EaseOutSine(float val)
         {
             return clamp1(Mathf.Sin(val * Mathf.PI * 0.5f));
         }
-        public static float EaseInOutSine(float val)
+        static float EaseInOutSine(float val)
         {
             return clamp1(0.5f * (1 - Mathf.Cos(Mathf.PI * val)));
         }
-        public static float EaseInQuad(float val)
+        static float EaseInQuad(float val)
         {
             return val * val;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float EaseOutQuad(float val)
+        static float EaseOutQuad(float val)
         {
             float p0 = 1f - val;
             return clamp1(1f - p0 * p0);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float EaseInOutQuad(float val)
+        static float EaseInOutQuad(float val)
         {
             return val < 0.5001f ? 2f * val * val : clamp1(1f - pow(-2f * val + 2f, 2) * 0.5f);
         }
-        public static float EaseInCubic(float val)
+        static float EaseInCubic(float val)
         {
             return val * val * val;
         }
-        public static float EaseOutCubic(float val)
+        static float EaseOutCubic(float val)
         {
             val = 1f - val;
             return clamp1(1 - (val * val * val));
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float EaseInOutCubic(float val)
+        static float EaseInOutCubic(float val)
         {
             return val < 0.5001f ? 4f * val * val * val : clamp1(1f - pow(-2f * val + 2f, 3) * 0.5f);
         }
-        public static float EaseInQuart(float val)
+        static float EaseInQuart(float val)
         {
             return val * val * val * val;
         }
-        public static float EaseOutQuart(float val)
+        static float EaseOutQuart(float val)
         {
             val = 1f - val;
             return clamp1(1f - (val * val * val * val));
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float EaseInOutQuart(float val)
+        static float EaseInOutQuart(float val)
         {
             return val < 0.5001f ? 8f * val * val * val * val : clamp1(1f - pow(-2f * val + 2f, 4) * 0.5f);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float EaseInQuint(float val)
+        static float EaseInQuint(float val)
         {
             return val * val * val * val * val;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float EaseOutQuint(float val)
+        static float EaseOutQuint(float val)
         {
             val = 1f - val;
             return 1f - clamp1(val * val * val * val * val);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float EaseInOutQuint(float val)
+        static float EaseInOutQuint(float val)
         {
             return val < 0.5001f ? 16f * val * val * val * val * val : clamp1(1f - pow(-2f * val + 2f, 5) * 0.5f);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float EaseInExpo(float val)
+        static float EaseInExpo(float val)
         {
             return val > 0f ? Mathf.Pow(2f, 10f * val - 10f) : 0f;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float EaseOutExpo(float val)
+        static float EaseOutExpo(float val)
         {
             return val > 1f ? 1f : 1f - Mathf.Pow(2f, -10f * val);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float EaseInOutExpo(float val)
+        static float EaseInOutExpo(float val)
         {
             return val < 0f
             ? 0f
@@ -141,19 +141,19 @@ namespace CTween
             : clamp1((2f - Mathf.Pow(2f, -20f * val + 10f)) * 0.5f);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float EaseInCirc(float val)
+        static float EaseInCirc(float val)
         {
             return 1f - clamp1(Mathf.Sqrt(1f - (val * val)));
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float EaseOutCirc(float val)
+        static float EaseOutCirc(float val)
         {
             val = val - 1f;
             return clamp1(Mathf.Sqrt(1f - (val * val - 1f)));
         }
         //TODO : Surely, this is not accurate.
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float EaseInOutCirc(float val)
+        static float EaseInOutCirc(float val)
         {
             val = val * 2f;
 
@@ -166,19 +166,19 @@ namespace CTween
             return clamp1(0.5f * (Mathf.Sqrt(1f - val * val) + 1f));
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float EaseInBack(float val)
+        static float EaseInBack(float val)
         {
             return 2.70158f * val * val * val - 1.70158f * val * val;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float EaseOutBack(float val)
+        static float EaseOutBack(float val)
         {
             float p0 = val - 1f;
             float p1 = p0 * p0;
             return 1f + 2.70158f * (p0 * p0 * p0) + 1.70158f * p1;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float EaseInOutBack(float val)
+        static float EaseInOutBack(float val)
         {
             const float c2 = 2.594909f;
             float p0 = val * 2f;
@@ -189,7 +189,7 @@ namespace CTween
             : (p1 * p1 * ((c2 + 1f) * (p0 - 2f) + c2) + 2f) * 0.5f;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float EaseInElastic(float val)
+        static float EaseInElastic(float val)
         {
             return val < 0f
             ? 0f
@@ -198,7 +198,7 @@ namespace CTween
             : -Mathf.Pow(2f, 10f * val - 10f) * Mathf.Sin((val * 10f - 10.75f) * 2.0943951023932f);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float EaseOutElastic(float val)
+        static float EaseOutElastic(float val)
         {
             return val < 0f
             ? 0f
@@ -207,7 +207,7 @@ namespace CTween
             : Mathf.Pow(2f, -10f * val) * Mathf.Sin((val * 10f - 0.75f) * 2.0943951023932f) + 1f;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float EaseInOutElastic(float val)
+        static float EaseInOutElastic(float val)
         {
             const float c5 = 1.39626340159546f;
 
@@ -220,12 +220,12 @@ namespace CTween
             : Mathf.Pow(2f, -20f * val + 10f) * Mathf.Sin((20f * val - 11.125f) * c5) * 0.5f + 1f;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float EaseInBounce(float val)
+        static float EaseInBounce(float val)
         {
             return 1f - EaseOutBounce(1f - val);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float EaseOutBounce(float val)
+        static float EaseOutBounce(float val)
         {
             const float n1 = 7.5625f;
             const float d1 = 2.75f;
@@ -252,25 +252,25 @@ namespace CTween
         }
         //TODO: This is very wrong.
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float EaseInOutBounce(float val)
+        static float EaseInOutBounce(float val)
         {
             return val < 0.5001f
             ? (1f - EaseOutBounce(1f - 2f * val)) * 0.5f
             : (1f + EaseOutBounce(2f * val - 1f)) * 0.5f;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float SpringIn(float val)
+        static float SpringIn(float val)
         {
             return val < 1.0001f ? val * val * ((1.70158f + 1) * val - 1.70158f) : 1f;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float SpringOut(float val)
+        static float SpringOut(float val)
         {
             float p0 = val - 1f;
             return val < 1.0001f ? p0 * p0 * ((1.70158f + 1f) * p0 + 1.70158f) + 1f : 1f;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float SpringInOut(float val)
+        static float SpringInOut(float val)
         {
             const float c = 1.70158f;
 
@@ -287,21 +287,21 @@ namespace CTween
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float EaseInWeightedOut(float val)
+        static float EaseInWeightedOut(float val)
         {
             if (val < 0f) return 0f;
             if (val > 1f) return 1f;
             return val < 0.5f ? 8f * val * val * val : (1f - 8f * (val - 1f) * (val - 1f) * 1.70158f * ((val - 0.5f) * (val - 0.5f)));
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float EaseInWeightedReboundOut(float val)
+        static float EaseInWeightedReboundOut(float val)
         {
             if (val < 0f) return 0f;
             if (val > 1f) return 1f;
             return val < 0.5f ? 8f * val * val * val : (1f - 8f * (val - 1f) * (val - 1f) * 1.70158f * ((val - 0.5f) * (val - 0.75f)));
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float Bezier1D(float val)
+        static float Bezier1D(float val)
         {
             float min = 0f;
             float max = 1f;
@@ -310,7 +310,7 @@ namespace CTween
             return clamp1(((1 - val) * (1 - val) * min) + (2 * val * (1 - val) * c) + (val * val * max));
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float Bezier2DEaseFloatIn(float val)
+        static float Bezier2DEaseFloatIn(float val)
         {
             float start = 0f;
             float end = 1f;
@@ -318,17 +318,17 @@ namespace CTween
             float endMid = 0.75f * -val;
             return clamp1(((1 - val) * (1 - val) * (1 - val) * start) + (3 * (1 - val) * (1 - val) * val * startMid) + (3 * (1 - val) * val * val * endMid) + (val * val * val * end));
         }
-        public static float Bezier2DEaseFloatOut(float val)
+        static float Bezier2DEaseFloatOut(float val)
         {
             return clamp1(1f - Bezier2DEaseFloatIn(1f - val));
         }
-        public static float Bezier2DEaseFloatInOut(float val)
+        static float Bezier2DEaseFloatInOut(float val)
         {
             return val < 0.5001f
             ? (1f - Bezier2DEaseFloatOut(1f - 2f * val)) * 0.5f
             : (1f + Bezier2DEaseFloatOut(2f * val - 1f)) * 0.5f;
         }
-        public static float Bezier2DEaseBrakeInOut(float val)
+        static float Bezier2DEaseBrakeInOut(float val)
         {
             return val < 0.5001f
             ? (1f - Bezier2DEaseFloatIn(1f - 2f * val)) * 0.5f
@@ -343,17 +343,8 @@ namespace CTween
         {
             return upperbound < 1 ? upperbound : 1f;
         }
-        /// <summary>
-        /// Lowerbound clamping.
-        /// </summary>
-        /// <param name="lowerbound"></param>
-        /// <returns></returns>
-        static float clamp0(float lowerbound)
-        {
-            return lowerbound > 0 ? lowerbound : 0f;
-        }
         //less than 10 this is faster
-        public static float pow(float input, int length)
+        static float pow(float input, int length)
         {
             float result = input;
             var len = length - 1;
@@ -494,7 +485,10 @@ namespace CTween
         Bezier2DEaseFloatIn = 37,
         Bezier2DEaseFloatOut = 38,
         Bezier2DEaseFloatInOut = 39,
-        Bezier2DEaseBrakeInOut = 40
+        Bezier2DEaseBrakeInOut = 40,
+        PingPong = 41,
+        Punch,
+        Shake
     }
     /// <summary>Main static class.</summary>
     public static class ct
@@ -503,59 +497,59 @@ namespace CTween
         /// <param name="gameObject">GameObject.</param>
         /// <param name="to">Target.</param>
         /// <param name="duration">Duration.</param>
-        public static CompactTween ctMove(this GameObject gameObject, Vector3 to, float duration)
+        public static CoreTween ctMove(this GameObject gameObject, Vector3 to, float duration)
         {
-            return Ctween.move(gameObject.transform, to, duration);
+            return CTween.move(gameObject.transform, to, duration);
         }
         /// <summary>Rotates a gameObject.</summary>
         /// <param name="gameObject">GameObject.</param>
         /// <param name="direction">Direction.</param>
         /// <param name="angle">Angle.</param>
         /// <param name="duration">Duration.</param>
-        public static CompactTween ctRotate(this GameObject gameObject, Vector3 direction, float angle, float duration)
+        public static CoreTween ctRotate(this GameObject gameObject, Vector3 direction, float angle, float duration)
         {
-            return Ctween.rotate(gameObject.transform, direction, angle, duration);
+            return CTween.rotate(gameObject.transform, direction, angle, duration);
         }
         /// <summary>Scales the gameObject.</summary>
         /// <param name="gameObject">GameObject.</param>
         /// <param name="to">Target.</param>
         /// <param name="duration">Duration.</param>
-        public static CompactTween ctScale(this GameObject gameObject, Vector3 to, float duration)
+        public static CoreTween ctScale(this GameObject gameObject, Vector3 to, float duration)
         {
-            return Ctween.scale(gameObject.transform, to, duration);
+            return CTween.scale(gameObject.transform, to, duration);
         }
         /// <summary>Moves a visualElement.[</summary>
         /// <param name="visualElement">VisualElement.</param>
         /// <param name="to">Target.</param>
         /// <param name="duration">Duration.</param>
-        public static CompactTween ctMove(this VisualElement visualElement, Vector3 to, float duration)
+        public static CoreTween ctMove(this VisualElement visualElement, Vector3 to, float duration)
         {
-            return Ctween.move(visualElement, to, duration);
+            return CTween.move(visualElement, to, duration);
         }
         /// <summary>Scales a VisualElement.</summary>
         /// <param name="visualElement">VisualElement.</param>
         /// <param name="to">Target.</param>
         /// <param name="duration">Duration.</param>
-        public static CompactTween ctScale(this VisualElement visualElement, Vector3 to, float duration)
+        public static CoreTween ctScale(this VisualElement visualElement, Vector3 to, float duration)
         {
-            return Ctween.scale(visualElement, to, duration);
+            return CTween.scale(visualElement, to, duration);
         }
         /// <summary>Rotates a visualElement.</summary>
         /// <param name="visualElement">VisualElement.</param>
         /// <param name="to">Target.</param>
         /// <param name="duration">Duration.</param>
-        public static CompactTween ctRotate(this VisualElement visualElement, float to, float duration)
+        public static CoreTween ctRotate(this VisualElement visualElement, float to, float duration)
         {
-            return Ctween.rotate(visualElement, to, duration);
+            return CTween.rotate(visualElement, to, duration);
         }
         /// <summary>Interpolates a float value.</summary>
         /// <param name="text">TMP_Text component.</param>
         /// <param name="from">Initial value.</param>
         /// <param name="to">Target value.</param>
         /// <param name="duration">Duration.</param>
-        public static CompactTween ctFloat(this TMP_Text text, float from, float to, float duration)
+        public static CoreTween ctFloat(this TMP_Text text, float from, float to, float duration)
         {
-            var dummy = new CompactTween();
+            var dummy = new CoreTween();
 
             CTcore.InstantiateFloat(text.GetInstanceID(), from, to, duration, tick =>
             {
@@ -571,9 +565,9 @@ namespace CTween
         /// <param name="from">Initial value.</param>
         /// <param name="to">Target value.</param>
         /// <param name="duration">Duration.</param>
-        public static CompactTween ctFloat(this TextField text, float from, float to, float duration)
+        public static CoreTween ctFloat(this TextField text, float from, float to, float duration)
         {
-            var dummy = new CompactTween();
+            var dummy = new CoreTween();
 
             CTcore.InstantiateFloat(text.GetHashCode(), from, to, duration, tick =>
             {
@@ -589,9 +583,9 @@ namespace CTween
         /// <param name="from">Initial value.</param>
         /// <param name="to">Target value.</param>
         /// <param name="duration">Duration.</param>
-        public static CompactTween ctInt(this TMP_Text text, float from, float to, float duration)
+        public static CoreTween ctInt(this TMP_Text text, float from, float to, float duration)
         {
-            var dummy = new CompactTween();
+            var dummy = new CoreTween();
 
             CTcore.InstantiateFloat(text.GetInstanceID(), from, to, duration, tick =>
             {
@@ -608,9 +602,9 @@ namespace CTween
         /// <param name="from">Initial value.</param>
         /// <param name="to">Target value.</param>
         /// <param name="duration">Duration.</param>
-        public static CompactTween ctInt(this TextField text, float from, float to, float duration)
+        public static CoreTween ctInt(this TextField text, float from, float to, float duration)
         {
-            var dummy = new CompactTween();
+            var dummy = new CoreTween();
 
             CTcore.InstantiateFloat(text.GetHashCode(), from, to, duration, tick =>
             {
@@ -626,9 +620,9 @@ namespace CTween
         /// <param name="visualElement">VisualElement.</param>
         /// <param name="percent">Percent based value. 100 is the max value.</param>
         /// <param name="duration">Duration.</param>
-        public static CompactTween ctWidth(this VisualElement visualElement, float percent, float duration)
+        public static CoreTween ctWidth(this VisualElement visualElement, float percent, float duration)
         {
-            var dummy = new CompactTween();
+            var dummy = new CoreTween();
 
             CTcore.InstantiateFloat(visualElement.GetHashCode(), visualElement.resolvedStyle.width, percent, duration, tick =>
             {
@@ -643,9 +637,9 @@ namespace CTween
         /// <param name="visualElement">VisualElement.</param>
         /// <param name="percent">Percent based value. 100 is the max value.</param>
         /// <param name="duration">Duration.</param>
-        public static CompactTween ctHeight(this VisualElement visualElement, float percent, float duration)
+        public static CoreTween ctHeight(this VisualElement visualElement, float percent, float duration)
         {
-            var dummy = new CompactTween();
+            var dummy = new CoreTween();
 
             CTcore.InstantiateFloat(visualElement.GetHashCode(), visualElement.resolvedStyle.width, percent, duration, tick =>
             {
@@ -660,9 +654,9 @@ namespace CTween
         /// <param name="visualElement">VisualElement.</param>
         /// <param name="percent">Percent based value. 100 is the max value.</param>
         /// <param name="duration">Duration.</param>
-        public static CompactTween ctAlpha(this VisualElement visualElement, float to, float duration)
+        public static CoreTween ctAlpha(this VisualElement visualElement, float to, float duration)
         {
-            var dummy = new CompactTween();
+            var dummy = new CoreTween();
 
             CTcore.InstantiateFloat(visualElement.GetHashCode(), visualElement.resolvedStyle.opacity, to, duration, tick =>
             {
@@ -677,41 +671,41 @@ namespace CTween
         /// <param name="visualElement">VisualElement.</param>
         /// <param name="to">Target color.</param>
         /// <param name="duration">Duration.</param>
-        public static CompactTween ctColor(this VisualElement visualElement, Color to, float duration)
+        public static CoreTween ctColor(this VisualElement visualElement, Color to, float duration)
         {
-            return Ctween.color(visualElement, to, duration);
+            return CTween.color(visualElement, to, duration);
         }
         /// <summary>Punch effects.</summary>
         /// <param name="gameObject">GameObject.</param>
         /// <param name="power">Power.</param>
         /// <param name="duration">Duration.</param>
         /// <returns></returns>
-        public static CompactTween ctPunch2D(this GameObject gameObject, float power, float duration)
+        public static CoreTween ctPunch2D(this GameObject gameObject, float power, float duration)
         {
-            var dummy = new CompactTween();
+            var dummy = new CoreTween();
 
             var defpos = gameObject.transform.localPosition;
             var defrot = gameObject.transform.localRotation;
 
             var pos = new Vector3(defpos.x, defpos.y + Mathf.Pow(6f, power), defpos.z);
 
-            var sca = Ctween.scale(gameObject.transform, new Vector3(gameObject.transform.localScale.x * (power * 0.65f), gameObject.transform.localScale.y * (power * 0.65f), gameObject.transform.localScale.z * (power * 0.65f)), duration * 0.3f).onLoopCount(1).onPingPong(true).onEase(Ease.EaseInOutBounce);
-            var rotinit = Ctween.rotateLocal(gameObject.transform, Vector3.forward, -15f, duration * 0.3f).onPingPong(true).onLoopCount(1).onEase(Ease.EaseInOutQuad);
-            var rot = Ctween.rotateLocal(gameObject.transform, Vector3.forward, 15f, duration * 0.3f).onLoopCount(1).onPingPong(true).onEase(Ease.EaseInOutQuad).halt(true);
-            var mov = Ctween.moveLocal(gameObject.transform, pos, duration * 0.35f).onPingPong(true).onLoopCount(1);
+            var sca = CTween.scale(gameObject.transform, new Vector3(gameObject.transform.localScale.x * (power * 0.65f), gameObject.transform.localScale.y * (power * 0.65f), gameObject.transform.localScale.z * (power * 0.65f)), duration * 0.3f).onLoopCount(1).onPingPong(true).onEase(Ease.EaseInOutBounce);
+            var rotinit = CTween.rotateLocal(gameObject.transform, Vector3.forward, -15f, duration * 0.3f).onPingPong(true).onLoopCount(1).onEase(Ease.EaseInOutQuad);
+            var rot = CTween.rotateLocal(gameObject.transform, Vector3.forward, 15f, duration * 0.3f).onLoopCount(1).onPingPong(true).onEase(Ease.EaseInOutQuad).halt(true);
+            var mov = CTween.moveLocal(gameObject.transform, pos, duration * 0.35f).onPingPong(true).onLoopCount(1);
 
             CTcore.RegisterLastOnComplete(rotinit.index, () =>
             {
                 rot.halt(false);
             });
 
-            mov.getTween().setFrom(defpos);
+            mov.getTween.setFrom(defpos);
             dummy.index = mov.index;
             return dummy;
         }
-        public static CompactTween ctShake(this GameObject gameObject, float power, float magnitude, float duration)
+        public static CoreTween ctShake(this GameObject gameObject, float power, float magnitude, float duration)
         {
-            var dummy = new CompactTween();
+            var dummy = new CoreTween();
             var transform = gameObject.transform;
             var defpos = transform.localPosition;
             var defrot = transform.localRotation;
@@ -754,6 +748,124 @@ namespace CTween
             });
 
             dummy.index = index;
+            return dummy;
+        }
+        public static CoreTween ctAnim(this RectTransform rectTransform, Sprite[] sprites, float duration)
+        {
+            var dummy = new CoreTween();
+            float oneframe = duration / sprites.Length;
+
+            CTcore.InstantiateFloat(rectTransform.gameObject.GetInstanceID(), 0f, 1000f, duration, null, out int index, true);
+            dummy.index = index;
+
+            var img = rectTransform.gameObject.GetComponent<UnityEngine.UI.Image>();
+            float lastFrame = 0f;
+            bool flip = false;
+            int loopCounter = 0;
+            int lastIndex = 0;
+            bool complete = false;
+
+            CTcore.RegisterOnUpdate(dummy.index, (System.Action<float>)(tick =>
+            {
+                if(complete)
+                {
+                    return;
+                }
+
+                int start = 0;
+                int end = sprites.Length;
+
+                if (dummy.getTween.isFlipTick)
+                {
+                    start = sprites.Length;
+                    end = 0;
+                }
+
+                bool last = false;
+
+                if (!flip)
+                {
+                    var t = Time.realtimeSinceStartup;
+
+                    if (lastFrame + oneframe < t)
+                    {
+                        img.sprite = sprites[lastIndex];
+                        lastFrame = t;
+
+                        if (lastIndex == sprites.Length - 1)
+                        {
+                            last = true;
+                        }
+                        else
+                        {
+                            lastIndex++;
+                        }
+                    }
+
+                }
+                else
+                {
+                    var t = Time.realtimeSinceStartup;
+                    
+                    if (lastFrame + oneframe < t)
+                    {
+                        img.sprite = sprites[lastIndex];
+                        lastFrame = t;
+
+                        if (lastIndex == 0)
+                        {
+                            last = true;
+                        }
+                        else
+                        {
+                            lastIndex--;
+                        }
+                    }
+                }
+
+                bool ispingpong = dummy.getTween.isPingpong;
+
+                if (dummy.getTween.loopCount > 0 && last)
+                {
+                    loopCounter++;
+
+                    if (ispingpong)
+                    {
+                        flip = !flip;
+
+                        if(loopCounter == dummy.getTween.loopCount * 2)
+                        {
+                            complete = true;
+                            return;
+                        }
+                        else
+                        {
+                            if(dummy.getTween.isCompleterepeat && loopCounter % 2 == 0)
+                            {
+                                CTcore.ctobjects[index].invoke.Invoke(2, 0f);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        lastIndex = 0;
+
+                        if(loopCounter == dummy.getTween.loopCount)
+                        {
+                            complete = true;
+                            return;
+                        }
+                        else
+                        {
+                            if(dummy.getTween.isCompleterepeat && loopCounter % 2 == 0)
+                            {
+                                CTcore.ctobjects[index].invoke.Invoke(2, 0f);
+                            }
+                        }
+                    }
+                }
+            }));
+
             return dummy;
         }
     }
