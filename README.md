@@ -1,10 +1,6 @@
 # CTween - zero allocation tweening library for Unity3D.  
 A lightweight, thread safe, small & compact tweening library for Unity3D engine. 
 
-## Performance
-CTween is a compact version of STween which is another zero allocation tweening lib for Unity3D.  
-Internally CTween is 100% struct based to avoid heap allocation and get much better performance compared to regular classes.  
-
 ## Features :  
 - Move, Rotate, Scale, Value types interpolation (float, Vectors, Matrix4x4, Quaternion, etc).
 - UIToolkit support.
@@ -12,6 +8,7 @@ Internally CTween is 100% struct based to avoid heap allocation and get much bet
 - Curves (Quadratic curves, Bezier curves movement).
 - Easing functions.
 - Support for speed based interpolations.
+- Shader property.
 - Event callbacks & dispatching.
 - 2D & 3D workflow.
 
@@ -49,6 +46,18 @@ CTween.moveLocalZ(go.transform, 150f, 5f);
 //.move : RectTransform : param (RectTransform, Vector3:destination, float:duration)
 //description : Move a RectTransform to a certain point in the scene.  
 CTween.move(go.GetComponent<RectTransform>(), new Vector3(122, 22, 0f), 5f)
+
+//.move : VisualElement : param (VisualElement, Vector3:destination, float:duration)
+//description : Moves to certain point in the scene.
+CTween.move(visualElement, new Vector3(200, 150, 100), 5f);
+
+//.moveX : Transform : param (VisualElement, float:destination, float:duration)
+//description : Moves along X axis.
+CTween.moveX(visualElement, 100f, 1f);
+
+//.moveY : Transform : param (VisualElement, float:destination, float:duration)
+//description : Moves along Y axis.
+CTween.moveX(visualElement, 100f, 1f);
 
 //.scale : Transform : param (Transform, Vector3:target, float:duration)
 //description : Scale a Transform to target value.
@@ -114,10 +123,53 @@ CTween.value(id : 1, vector3.zero, new Vector3(10f, 19f, 11f), 2f, x=> {Debug.Lo
 //description : Interpolates a Quaternion type.
 CTween.value(id: 6, 0, 10, 2f, x=> {Debug.Log("print value : " + x);});
 
-//.value : color : param (int id, color:from, color:to, float:duration, Action<color> callback)
+//.value : Color : param (int id, Color:from, Color:to, float:duration, callback:Action<color>)
 //description : Hue shift a colors.
 CTween.value(id : 8, 0, 10, 2f, x=> {Debug.Log("print value : " + x);});
 
+//.alpha : alpha : param (CanvasGroup, float:from, float:to, float:duration)
+//description : Fades in/out alpha value of a canvasGroyup component.
+CTween.alpha(canvas.GetComponent<CanvasGroup>(), 1f, 0f, 3f);
+
+//.alpha : alpha : param (VisualElement, float:from, float:to, float:duration)
+//description : Fades in/out the opacity of a VisualElement.
+CTween.alpha(visualElement, 1f, 0f, 3f);
+
+//.color : Color : param (UnityEngine.UI.Image : Image component, Color:from, Color:to, float:duration)
+//description : Hue shift a color of Image component.
+CTween.color(gameObject.GetComponent<UnityEngine.UI.Image>(), Color.white, Color.blue, 3f);
+
+//.color : Color : param (VisualElement, Color:from, Color:to, float:duration)
+//description : Hue shift a color of a visualElement.
+CTween.color(visualElement, Color.white, Color.blue, 3f);
+
+//.shaderFloat : float : param (Material, float:from, float:to, float:duration)
+//description : Smoothly interpolates a shader property.
+CTween.shaderFloat(material, 0f, 1f, 3f);
+
+//.shaderInt : int : param (Material, int:from, int:to, float:duration)
+//description : Smoothly interpolates a shader property.
+CTween.shaderInt(material, 0, 10, 3f);
+
+//.shaderColor : float : param (Material, Color:from, Color:to, float:duration)
+//description : Smoothly interpolates a shader property.
+CTween.shaderFloat(material, Color.white, Color.red, 3f);
+
+//.shaderVector2 : Vector2 : param (Material, Vector2:from, Vector2:to, float:duration)
+//description : Smoothly interpolates a shader property.
+CTween.shaderVector2(material, Vector2.zero, new Vector2(20f, 20f), 3f);
+
+//.shaderVector3 : Vector3 : param (Material, Vector3:from, Vector3:to, float:duration)
+//description : Smoothly interpolates a shader property.
+CTween.shaderVector3(material, Vector3.zero, new Vector3(0f, 20f, 77f), 3f);
+
+//.shaderVector4 : Vector4 : param (Material, Vector4:from, Vector4:to, float:duration)
+//description : Smoothly interpolates a shader property.
+CTween.shaderFloat(material, Vector4.zero, new Vector4(12f, 23f, 90f, `11f), 3f);
+
+//.next : CompactTween : param (Transform, CompactTween:previousTween, CompactTween:nextTween)
+//description : Queues or chain a sequence of tweens.
+CTween.moveX(go.transform, 100f, 5f).next(CTween.moveY(go.transform, 90f, 2f));
 ```
 
 ## Combine  
