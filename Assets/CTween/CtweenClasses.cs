@@ -444,22 +444,39 @@ namespace CompactTween.Extension
             {
                 case LerpCoreType.Position:
                 case LerpCoreType.Translate:
-                    transform.position = !isLocal ? lerpVector3(!isFlipTick ? 1f : 0f) : transform.TransformPoint(lerpVector3(!isFlipTick ? 1f : 0f));
+
+                    if(!isLocal)
+                    {
+                        transform.position = lerpVector3(!isFlipTick ? 1f : 0f);
+                    }
+                    else
+                    {
+                        transform.localPosition = lerpVector3(!isFlipTick ? 1f : 0f);
+                    }
+
                     break;
                 case LerpCoreType.Rotation:
+
                     if (!isLocal)
+                    {
                         transform.rotation = lerpQuat(!isFlipTick ? 1f : 0f);
+                    }
                     else
+                    {
                         transform.localRotation = lerpQuat(!isFlipTick ? 1f : 0f);
+                    }
+
                     break;
                 case LerpCoreType.Scale:
                     transform.localScale = lerpVector3(!isFlipTick ? 1f : 0f);
                     break;
                 case LerpCoreType.Float:
+
                     if (isDelegateAssigned)
                     {
                         callback(0, lerpFloat(!isFlipTick ? 1f : 0f));
                     }
+
                     break;
                 case LerpCoreType.AnchoredPosition:
                     if (!isLocal)
@@ -594,7 +611,15 @@ namespace CompactTween.Extension
         {
             if (!onRepeat())
             {
-                transform.position = !isLocal ? lerpVector3(tick) : transform.TransformPoint(lerpVector3(tick));
+                if(!isLocal)
+                {
+                    transform.position = lerpVector3(tick);
+                }
+                else
+                {
+                    transform.localPosition = lerpVector3(tick);
+                }
+
                 return false;
             }
 
@@ -605,7 +630,15 @@ namespace CompactTween.Extension
         {
             if (!onRepeat())
             {
-                rectTransform.anchoredPosition3D = !isFlipTick ? lerpVector3(tick) : rectTransform.InverseTransformPoint(lerpVector3(tick));
+                if(isLocal)
+                {
+                    rectTransform.anchoredPosition3D = lerpVector3(tick);
+                }
+                else
+                {
+                    rectTransform.anchoredPosition = lerpVector3(tick);
+                }
+
                 return false;
             }
 
