@@ -253,6 +253,32 @@ async Task WaitTaskTween()
 }
 
 ```
+## Pause, Resume, Cancel
+```
+CTween.moveLocalX(go.transform, 100f, 2f);
+
+//Pause
+CTween.Pause(go);
+
+//Resume
+CTween.Resume(go);
+
+//Cancel
+CTween.Cancel(go);
+
+//Bulk Pauses, Resumes, Cancels
+CTween.PauseAll();
+CTween.ResumeAll();
+CTween.CancelAll();
+
+//Cancels 1st found tween instance.
+CTween.CancelFirst(go);
+
+//Cancels multiple tweens that's tied to the same gameObject.
+CTween.CancelMany(go);
+
+```
+
 ## Combine  
 To combine you must use curves based tweening for move commands (the rest can be combined as is).   
 Reason being it's more performant than combining multiple interpolations at once and due to this library is meant to be fast and lightweight.   
