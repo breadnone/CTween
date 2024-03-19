@@ -15,8 +15,14 @@ A lightweight, thread safe, small & compact tweening library for Unity3D engine.
 - Event callbacks & dispatching.
 - 2D & 3D workflow.
 
+## Get Started:
+- Download the latest released package then import to your project.
+- Add the namespace `using CompactTween;`
+- Minimum Unity3D version 2022.x and above.   
+
 ## Syntaxes :
 ```cs
+
 //.move : Transform : param (Transform, Vector3:destination, float:duration)
 //description : Moves to certain point in the scene.
 CTween.move(go.transform, new Vector3(200, 150, 100), 5f);
