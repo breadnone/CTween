@@ -35,6 +35,8 @@ namespace CompactTween
     public static class CTween
     {
         static short shortCounter = short.MinValue;
+        static CoreTween dummy;
+        /// <summary>Quick ids.</summary>
         public static short quickShortId
         {
             get
@@ -570,7 +572,7 @@ namespace CompactTween
             {
                 for (int i = 0; i < 16; i++)
                 {
-                    result[i] = Mathf.Lerp(from[i], to[i], tick);
+                    result[i] = Mathf.LerpUnclamped(from[i], to[i], tick);
                 }
 
                 callback.Invoke(result);
@@ -750,7 +752,6 @@ namespace CompactTween
         /// <param name="image">RectTransform that contains image component.</param>
         /// <param name="to">Target value</param>
         /// <param name="duration"></param>
-        /// <returns></returns>
         public static CoreTween alpha(RectTransform rectTransform, float to, float duration)
         {
             var img = rectTransform.gameObject.GetComponent<UnityEngine.UI.Image>();
@@ -1222,6 +1223,7 @@ namespace CompactTween
 
             return ct;
         }
+
         /// <summary>Sets custom id.</summary>
         /// <param name="id">Custom id.</param>
         public static CoreTween onSetId(this CoreTween ct, int id)
@@ -1305,31 +1307,6 @@ namespace CompactTween
             CTcore.RegisterLastOnComplete(ct.index, () =>
             {
                 audioSource.Play();
-            });
-
-            return ct;
-        }
-        /// <summary>Queues tween instances.</summary>
-        /// <param name="nextTween">Next tween to be queued.</param>
-        public static CoreTween onStartPlayAudio(this CoreTween ct, AudioSource audioSource, bool oneShot)
-        {
-            bool init = false;
-
-            CTcore.RegisterOnUpdate(ct.index, (x) =>
-            {
-                if (!init)
-                {
-                    init = true;
-
-                    if (!oneShot)
-                    {
-                        audioSource.Play();
-                    }
-                    else
-                    {
-                        audioSource.PlayOneShot(audioSource.clip);
-                    }
-                }
             });
 
             return ct;
@@ -1560,7 +1537,7 @@ namespace CompactTween
 
             CTcore.RegisterLastOnComplete(ct.index, () =>
             {
-                CPlayerLoop.mono.PassTaskCoroutine(tcs);
+                tcs.SetResult(true);
             });
 
             return tcs.Task;
@@ -1667,7 +1644,7 @@ namespace CompactTween
         }
         /// <summary>Canels queue.</summary>
         public static void CancelQueue(CoreTween ct) => CoreTween.TryCancelQueues(ct.queueId);
-        /// <summary>Cance;s queue.</summary>
+        /// <summary>Cancels queue.</summary>
         /// <param name="queueid">Queue id.</param>
         public static void CancelQueue(int queueid) => CoreTween.TryCancelQueues(queueid);
         /// <summary>Resumes a paused tween instance.</summary>
@@ -1701,6 +1678,9 @@ namespace CompactTween
         /// <summary>Cancels any instances found with the same instance id. Usually tweens the are tweening the same transform/gameobject at once.</summary>
         /// <param name="gameObject">GameObject.</param>
         public static void CancelMany(GameObject gameObject) => EnumerateAllCores(true, false, false, gameObject.GetInstanceID());
+        /// <summary>Re-initialization of the array length. Useful for when there lots of tween instances at the same time by less often resizing the internal arrays..</summary>
+        /// <param name="defaultPoolLength">Length.</param>
+        public static void Init(int defaultPoolLength)=> CTcore.Init(defaultPoolLength);
     }
 
     public struct CoreTween

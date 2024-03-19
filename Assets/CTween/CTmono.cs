@@ -25,17 +25,32 @@ using UnityEngine;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using UnityEngine.Events;
 
 namespace CompactTween.Extension
 {
     public class CTmono : MonoBehaviour
     {
+        [SerializeField] public List<(UnityEvent<int, float> callback, int index)> callbacks = new List<(UnityEvent<int, float>, int index)>();
         // Start is called before the first frame update
         void Awake()
         {
             DontDestroyOnLoad(this.gameObject);
         }
-
+        public void BackupMonoCallback(Action<int, float> callback, int index)
+        {
+            var evt = new UnityEvent<int, float>();
+            callback += (x, y)=> {Debug.Log("Testing testing testing");};
+            evt.AddListener(new UnityAction<int, float>(callback));
+            callbacks.Add((evt, index));
+        }
+        public void PokeTesting()
+        {
+            for(int i = 0; i < callbacks.Count; i++)
+            {   
+                callbacks[i].callback.Invoke(2, 1f);
+            }
+        }
         public void PassSecondCoroutine(WaitForSeconds iyield)
         {
             StartCoroutine(SecondPass(iyield));

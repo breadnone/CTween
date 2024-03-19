@@ -38,10 +38,10 @@ public class ctest_script : MonoBehaviour
         targetdefpos = target.transform.position;
     }
     public void MoveToTarget()
-    {
+    { 
         int counter = 0;
         mov.transform.position = defPos;
-        var t =  CTween.move(mov.transform, targetdefpos, duration).onPingPong(pingpong).onLoopCount(loopCount).onComplete(()=>
+        var t =  CTween.move(mov.transform, targetdefpos, duration).onEase(ease).onPingPong(pingpong).onLoopCount(loopCount).onComplete(()=>
         {
             counter++;
             Debug.Log("Complete --  " + counter);

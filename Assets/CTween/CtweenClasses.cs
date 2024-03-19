@@ -38,10 +38,14 @@ namespace CompactTween.Extension
         public static CTcore[] fcore;
         /// <summary>UnityObjects.</summary>
         public static CTobject[] ctobjects;
+        static CTdelta[] ctdeltas;
+        static CTvector[] ctvectors;
         /// <summary>CTcore pool.</summary>
         static ArrayPool<CTcore> pool = ArrayPool<CTcore>.Shared;
         /// <summary>Object pool.</summary>
         static ArrayPool<CTobject> poolObjects = ArrayPool<CTobject>.Shared;
+        static ArrayPool<CTvector> poolVectors = ArrayPool<CTvector>.Shared;
+        static ArrayPool<CTdelta> poolDeltas = ArrayPool<CTdelta>.Shared;
         /// <summary>The max limit for the pool. Default is 16 and will be resized automatically as needed.</summary>
         public static int maxPoolLength { get; set; } = 16;
         /// <summary>External transforms.</summary>
@@ -75,10 +79,14 @@ namespace CompactTween.Extension
             return null;
         }
         /// <summary>Initialization.</summary>
-        public static void Init()
+        public static void Init(int defaultLength = 16)
         {
+            maxPoolLength = defaultLength;
             fcore = pool.Rent(maxPoolLength);
             ctobjects = poolObjects.Rent(maxPoolLength);
+            ctdeltas = poolDeltas.Rent(maxPoolLength);
+            ctvectors = poolVectors.Rent(maxPoolLength);
+
             CPlayerLoop.InitStaticArray();
 
             for (int i = 0; i < CPlayerLoop.activeCores.Length; i++)
@@ -148,6 +156,8 @@ namespace CompactTween.Extension
                 var count = fcore.Length;
                 var newarr = pool.Rent(count * 2);
                 var newobjs = poolObjects.Rent(count * 2);
+                var newvectors = poolVectors.Rent(count * 2);
+                var newdeltas = poolDeltas.Rent(count * 2);
 
                 for (int i = 0; i < newarr.Length; i++)
                 {
@@ -156,6 +166,8 @@ namespace CompactTween.Extension
                         newarr[i] = fcore[i];
                         newobjs[i].AssignObjects(ctobjects[i].GetObjects.transform, ctobjects[i].GetObjects.invoke);
                         ctobjects[i].Reset();
+                        newvectors[i] = ctvectors[i];
+                        newdeltas[i] = ctdeltas[i];
                     }
                     else
                     {
@@ -165,8 +177,13 @@ namespace CompactTween.Extension
 
                 pool.Return(fcore);
                 poolObjects.Return(ctobjects);
+                poolVectors.Return(ctvectors);
+                poolDeltas.Return(ctdeltas);
+
                 fcore = newarr;
                 ctobjects = newobjs;
+                ctvectors = newvectors;
+                ctdeltas = newdeltas;
                 CPlayerLoop.Resize(false);
             }
             else
@@ -185,13 +202,13 @@ namespace CompactTween.Extension
             var core = new CTcore
             {
                 _id = transform.gameObject.GetInstanceID(),
-                _duration = duration,
                 _mode = mode
             };
 
-            core.set(from, to);
             core.selectIslocal(isLocal);
             index = GetArraySlot(ref core, transform);
+            ctdeltas[index]._duration = duration;
+            ctvectors[index].set(from, to);
         }
         /// <summary>Instantiates new interpolator.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -200,13 +217,13 @@ namespace CompactTween.Extension
             var core = new CTcore
             {
                 _id = transform.gameObject.GetInstanceID(),
-                _duration = float.PositiveInfinity,
                 _mode = LerpCoreType.Follow
             };
 
-            core.set(new Vector3(smoothTime, 0f, 0f), velocity);
             index = GetArraySlot(ref core, transform);
+            ctdeltas[index]._duration = float.PositiveInfinity;
             exttransforms.Add((to, index));
+            ctvectors[index].set(new Vector3(smoothTime, 0f, 0f), velocity);
         }
         /// <summary>Instantiates new interpolator.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -215,14 +232,14 @@ namespace CompactTween.Extension
             var core = new CTcore
             {
                 _id = transform.gameObject.GetInstanceID(),
-                _duration = duration,
                 _mode = LerpCoreType.RotateAround
             };
 
-            core.set(target, direction);
             core.setFromRotation(new Quaternion(angle, transform.position.x, transform.position.y, transform.position.z));
             core.selectIslocal(isLocal);
             index = GetArraySlot(ref core, transform);
+            ctdeltas[index]._duration = duration;
+            ctvectors[index].set(target, direction);
         }
         /// <summary>Instantiates new interpolator.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -231,14 +248,14 @@ namespace CompactTween.Extension
             var core = new CTcore
             {
                 _id = transform.gameObject.GetInstanceID(),
-                _duration = duration,
                 _mode = LerpCoreType.Rotation
             };
 
             core.selectIslocal(isLocal);
-            core.set(new Vector3(angle, 0f, 0f), direction);
             core.setFromRotation(!isLocal ? transform.rotation : transform.localRotation);
             index = GetArraySlot(ref core, transform);
+            ctdeltas[index]._duration = duration;
+            ctvectors[index].set(new Vector3(angle, 0f, 0f), direction);
         }
         /// <summary>Floats interpolation.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -247,12 +264,12 @@ namespace CompactTween.Extension
             var core = new CTcore
             {
                 _id = id,
-                _duration = duration,
                 _mode = LerpCoreType.Float
             };
 
-            core.setFrom(new Vector3(from, to, 0f));
             index = GetArraySlot(ref core, null);
+            ctdeltas[index]._duration = duration;
+            ctvectors[index].from = new Vector3(from, to, 0f);
 
             if (func != null)
             {
@@ -311,57 +328,41 @@ namespace CompactTween.Extension
         ////////////////////////////////////////////////////////////
         /// <summary>The property</summary>
         Quaternion _initRotation;
-        /// <summary>The transform.</summary>
-        float x, a, y, b, z, c;
-        /// <summary>The duration/time for the tween to complete.</summary>
-        float _duration;
-        /// <summary>The elapsed time in seconds based on the duration.</summary>
-        float _runningTime;
         /// <summary>The gameObject's instance id. Equal to gameObject.GetInstanceID().</summary>
         int _id;
         /// <summary>The index in the array.</summary>
         short _index;
-        /// <summary>Loop count.</summary>
-        byte _loopCount;
-        /// <summary>Elapsed loop counter.</summary>
-        byte _loopCounter;
-        /// <summary>Easing functions.</summary>
-        byte _ease;
-        /// <summary>Speed</summary>
-        byte _speed;
-        byte _jump;
         /// <summary>Tween mode.</summary>
         LerpCoreType _mode;
         /// <summary>Boolean states.</summary>
         BoolProperty _states;
+        public ref CTcore ctcore => ref fcore[_index];
+        public ref CTdelta delta => ref ctdeltas[_index];
+        public ref CTvector vector => ref ctvectors[_index];
         /// <summary>Initial value.</summary>
-        public Vector3 from => new Vector3(a, b, c);
+        public ref Vector3 from => ref ctvectors[_index].from;
         /// <summary>Target value.</summary>
-        public Vector3 to => new Vector3(x, y, z);
+        public ref Vector3 to => ref ctvectors[_index].to;
         /// <summary>Initial rotation.</summary>
         public Quaternion fromRotation => _initRotation;
         /// <summary>Interpolation type.</summary>
         public LerpCoreType mode => _mode;
         /// <summary>Speed based.</summary>
-        public void setSpeed(byte value) => _speed = value;
+        public void setSpeed(byte value) => ctdeltas[_index]._speed = value;
         /// <summary>Easing function type.</summary>
-        public void setEase(byte value) => _ease = value;
+        public void setEase(byte value) => ctdeltas[_index]._ease = value;
         /// <summary>Loop count.</summary>
-        public void setLoopCount(byte value) => _loopCount = value;
-        /// <summary>Loop counter.</summary>
-        public void setLoopCounter(byte value) => _loopCounter = value;
+        public void setLoopCount(byte value) => ctdeltas[_index]._loopCount = value;
         /// <summary>Instance id.</summary>
         public void setId(int value) => _id = value;
-        /// <summary>Elapsed time.</summary>
-        public float runningTime => _runningTime;
         /// <summary>Id. Default is the gameObjects/unityObject's id otherwise customs.</summary>
         public int id => _id;
         /// <summary>Index.</summary>
         public int index => _index;
         /// <summary>Loop count.</summary>
-        public byte loopCount => _loopCount;
+        public byte loopCount => ctdeltas[_index]._loopCount;
         /// <summary>Tween duration.</summary>
-        public float duration => _duration;
+        public float duration => ctdeltas[_index]._duration;
         /// <summary>RectTransform.</summary>
         public RectTransform rectTransform => ctobjects[_index].transform as RectTransform;
         /// <summary>The transform.</summary>
@@ -373,21 +374,7 @@ namespace CompactTween.Extension
         /// <summary>Register callbacks.</summary>
         public void assignCallback(Action<int, float> callback) => ctobjects[_index].invoke += callback;
         /// <summary>Delta tick.</summary>
-        float tick
-        {
-            get
-            {
-                if (_speed == 0)
-                {
-                    return CTEasing.Easing(_ease, _runningTime / _duration);
-                }
-                else
-                {
-                    _runningTime = Mathf.MoveTowards(_runningTime, !isFlipTick ? 1f : 0f, _speed / 3f * (!isUnscaled ? Time.deltaTime : Time.unscaledDeltaTime));
-                    return _runningTime;
-                }
-            }
-        }
+        float tick => ctdeltas[_index].tick;
         /// <summary>Sets default property.</summary>
         void setDefault(bool resetCtObjects)
         {
@@ -396,13 +383,12 @@ namespace CompactTween.Extension
                 ctobjects[_index].Reset();
             }
 
+            ctdeltas[index] = default;
+            ctdeltas[index].setDefault();
+            ctvectors[index] = default;
+
             _id = -1;
             _index = -1;
-            _ease = (byte)Ease.EaseLinear;
-            _runningTime = 0f;
-            _duration = 0f;
-            _loopCount = 1;
-            _loopCounter = 0;
             _mode = LerpCoreType.Position;
             _initRotation = Quaternion.identity;
 
@@ -414,23 +400,7 @@ namespace CompactTween.Extension
         /// <summary>Retrieves the initial position value of a transform.</summary>
         public Vector3 initPosition => new Vector3(_initRotation.y, _initRotation.z, _initRotation.w);
         /// <summary>Sets from.</summary>
-        public void setFrom(Vector3 from)
-        {
-            a = from.x; b = from.y; c = from.z;
-        }
-        /// <summary>Sets target value.</summary>
-        public void setTo(Vector3 to)
-        {
-            x = to.x; y = to.y; z = to.z;
-        }
-        /// <summary>Sets the init and target values.</summary>
-        /// <param name="from">Initial value.</param>
-        /// <param name="to">Target value.</param>
-        public void set(Vector3 from, Vector3 to)
-        {
-            setFrom(from);
-            setTo(to);
-        }
+        public void setFrom(Vector3 from) => ctvectors[index].from = from;
         /// <summary>Invoked on completion.</summary>
         void OnComplete()
         {
@@ -445,7 +415,7 @@ namespace CompactTween.Extension
                 case LerpCoreType.Position:
                 case LerpCoreType.Translate:
 
-                    if(!isLocal)
+                    if (!isLocal)
                     {
                         transform.position = lerpVector3(!isFlipTick ? 1f : 0f);
                     }
@@ -585,7 +555,7 @@ namespace CompactTween.Extension
         /// <summary>Cancels the running tween.</summary>
         public void Cancel(bool invokeOnComplete = false, bool invokeLastComplete = true) => Clear(invokeOnComplete, invokeLastComplete);
         /// <summary>Update the delta tick.</summary>
-        void updateTime() => _runningTime += !isFlipTick ? (!isUnscaled ? Time.deltaTime : Time.unscaledDeltaTime) : -(!isUnscaled ? Time.deltaTime : Time.unscaledDeltaTime);
+        void updateTime() => ctdeltas[index]._runningTime += !isFlipTick ? (!isUnscaled ? Time.deltaTime : Time.unscaledDeltaTime) : -(!isUnscaled ? Time.deltaTime : Time.unscaledDeltaTime);
         /// <summary>Updates the transform properties (from and to values or rotation).</summary>
         public void UpdateTransform()
         {
@@ -611,7 +581,7 @@ namespace CompactTween.Extension
         {
             if (!onRepeat())
             {
-                if(!isLocal)
+                if (!isLocal)
                 {
                     transform.position = lerpVector3(tick);
                 }
@@ -630,7 +600,7 @@ namespace CompactTween.Extension
         {
             if (!onRepeat())
             {
-                if(isLocal)
+                if (isLocal)
                 {
                     rectTransform.anchoredPosition3D = lerpVector3(tick);
                 }
@@ -747,24 +717,26 @@ namespace CompactTween.Extension
             }
 
             CPlayerLoop.RemoveFromActiveTweens(index);
-            fcore[_index].setDefault(true);
+            ctcore.setDefault(true);
         }
         /// <summary>Invoked at the end of loop cycle.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         bool onRepeat()
         {
+            var tmp = delta.getTime;
+
             if (!isFlipTick)
             {
-                if (_speed == 0)
+                if (tmp.speed == 0)
                 {
-                    if (_runningTime < _duration)
+                    if (tmp.runningTime < tmp.duration)
                     {
                         return false;
                     }
                 }
                 else
                 {
-                    if (_runningTime < 1)
+                    if (tmp.runningTime < 1)
                     {
                         return false;
                     }
@@ -772,16 +744,16 @@ namespace CompactTween.Extension
             }
             else
             {
-                if (_speed == 0)
+                if (tmp.speed == 0)
                 {
-                    if (_runningTime > 0f)
+                    if (tmp.runningTime > 0f)
                     {
                         return false;
                     }
                 }
                 else
                 {
-                    if (_runningTime > 0f)
+                    if (tmp.runningTime > 0f)
                     {
                         return false;
                     }
@@ -790,13 +762,16 @@ namespace CompactTween.Extension
 
             OnLoop();
 
-            if (_loopCount > 0)
+            var loops = delta.getLoops;
+
+            if (loops.loopCount > 0)
             {
-                _loopCounter++;
+                delta.incLoopCounter();
+                loops = delta.getLoops;
 
                 if (!isPingpong)
                 {
-                    _runningTime = 0f;
+                    delta._runningTime = 0f;
 
                     if (isCompleterepeat)
                     {
@@ -809,18 +784,18 @@ namespace CompactTween.Extension
 
                     if (isInfiniteLoop)
                     {
-                        if (_loopCounter == _loopCount)
+                        if (loops.loopCount == loops.loopCounter)
                         {
-                            _loopCounter = 0;
+                            delta._loopCounter = 0;
                             return false;
                         }
                     }
 
-                    return _loopCounter < _loopCount ? false : true;
+                    return loops.loopCounter < loops.loopCount ? false : true;
                 }
                 else
                 {
-                    if (isCompleterepeat && (_loopCounter & 1) == 0)
+                    if (isCompleterepeat && (loops.loopCounter & 1) == 0)
                     {
                         //1 = update, 2 = oncomplete, 3 = on loop repeat cycle, 4 = on last complete (very last).
                         if (isDelegateAssigned)
@@ -829,7 +804,7 @@ namespace CompactTween.Extension
                         }
                     }
 
-                    if (_loopCounter < _loopCount * 2)
+                    if (loops.loopCounter < loops.loopCount * 2)
                     {
                         selectFliptick(!isFlipTick);
                         return false;
@@ -837,7 +812,7 @@ namespace CompactTween.Extension
 
                     if (isInfiniteLoop)
                     {
-                        _loopCounter = 0;
+                        delta.resetCounter();
                         selectFliptick(!isFlipTick);
                         return false;
                     }
@@ -848,12 +823,12 @@ namespace CompactTween.Extension
         }
         /// <summary>Interpolates Vector3s.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        Vector3 lerpVector3(float tick) => new Vector3(a + (x - a) * tick, b + (y - b) * tick, c + (z - c) * tick);
+        Vector3 lerpVector3(float tick) => vector.lerp(tick);
         /// <summary>Slerps two quaternions.</summary>
-        Quaternion lerpQuat(float tick) => Quaternion.SlerpUnclamped(fromRotation, fromRotation * Quaternion.AngleAxis(a, isLocal ? transform.InverseTransformDirection(to).normalized : to.normalized), tick);
+        Quaternion lerpQuat(float tick) => Quaternion.SlerpUnclamped(fromRotation, fromRotation * Quaternion.AngleAxis(from.x, isLocal ? transform.InverseTransformDirection(to).normalized : to.normalized), tick);
         /// <summary>Interpolates floating points.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        float lerpFloat(float tick) => a + (b - a) * tick;
+        float lerpFloat(float tick) => vector.lerpFloat(tick);
         /// <summary>Follows at far distance range.</summary>
         public void follow()
         {
@@ -902,6 +877,8 @@ namespace CompactTween.Extension
                 _states &= ~BoolProperty.Fliptick;
             else
                 _states |= BoolProperty.Fliptick;
+
+            ctdeltas[index].FlipSwitch(isFlipTick);
         }
         /// <summary>Sets the callback repeat flag.</summary>
         public void selectOncompleterepeat() => _states |= BoolProperty.Completerepeat;
@@ -962,6 +939,59 @@ namespace CompactTween.Extension
             transform = null;
             invoke = null;
         }
+    }
+    [Serializable]
+    public struct CTvector
+    {
+        public Vector3 from;
+        public Vector3 to;
+        public (Vector3 from, Vector3 to) get => (from, to);
+        public void set(Vector3 froms, Vector3 tos)
+        {
+            from = froms;
+            to = tos;
+        }
+        /// <summary>Interpolates Vector3s.</summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Vector3 lerp(float tick) => new Vector3(from.x + (to.x - from.x) * tick, from.y + (to.y - from.y) * tick, from.z + (to.z - to.z) * tick);
+        public float lerpFloat(float tick) => from.x + (from.y - from.x) * tick;
+    }
+    [Serializable]
+    public struct CTdelta
+    {
+        public float _duration;
+        public float _runningTime;
+        public byte _loopCount;
+        public byte _loopCounter;
+        public byte _speed;
+        public byte _ease;
+        public bool _flipTick;
+        public bool _unscaledTime;
+        public float tick
+        {
+            get
+            {
+                if (_speed == 0)
+                {
+                    return CTEasing.Easing(_ease, _runningTime / _duration);
+                }
+                else
+                {
+                    _runningTime = Mathf.MoveTowards(_runningTime, !_flipTick ? 1f : 0f, _speed / 3f * (!_unscaledTime ? Time.deltaTime : Time.unscaledDeltaTime));
+                    return _runningTime;
+                }
+            }
+        }
+        public void FlipSwitch(bool flip) => _flipTick = flip;
+        public void setDefault()
+        {
+            _loopCount = 1;
+            _ease = (byte)Ease.EaseLinear;
+        }
+        public void resetCounter() => _loopCounter = 0;
+        public void incLoopCounter() => _loopCounter++;
+        public (float duration, float runningTime, byte speed) getTime => (_duration, _runningTime, _speed);
+        public (byte loopCount, byte loopCounter) getLoops => (_loopCount, _loopCounter);
     }
     /// <summary>Interpolation types.</summary>
     public enum LerpCoreType : byte

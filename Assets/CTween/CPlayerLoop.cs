@@ -229,6 +229,8 @@ namespace CompactTween
             CTcore.Init();
             tweenLoop = new CtweenLoop();
             InstantiateMono();
+            //UnityEditor.AssemblyReloadEvents.beforeAssemblyReload += ()=> {};
+            //UnityEditor.AssemblyReloadEvents.afterAssemblyReload += ()=> {};
         }
     }
 }

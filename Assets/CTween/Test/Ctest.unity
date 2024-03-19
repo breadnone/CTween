@@ -5216,9 +5216,9 @@ MonoBehaviour:
   rotateObject: {fileID: 1730431592}
   direction: {x: 0, y: 0, z: 1}
   angle: 90
-  pingpong: 1
+  pingpong: 0
   loopCount: 2
-  infiniteLoop: 1
+  infiniteLoop: 0
   duration: 2
   text: {fileID: 925635739}
   canvas: {fileID: 2054196331}
