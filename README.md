@@ -16,7 +16,7 @@ A lightweight, thread safe, small & compact tweening library for Unity3D engine.
 - 2D & 3D workflow.
 
 ## Get Started:
-- Download the latest released package then import to your project.
+- Download the latest released [package](https://github.com/breadnone/CTween/releases) then import to your project.
 - Add the namespace `using CompactTween;`
 - Minimum Unity3D version 2022.x and above.   
 
