@@ -115,7 +115,10 @@ namespace CompactTween
                 }
             }
         }
+
+        public static void DefaultPool()=> staticPool.Return(activeCores);
     }
+
     /// <summary>Tween validator struct.</summary>
     [Serializable]
     public struct TimeStruct

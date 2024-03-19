@@ -81,7 +81,19 @@ namespace CompactTween.Extension
         /// <summary>Initialization.</summary>
         public static void Init(int defaultLength = 16)
         {
-            maxPoolLength = defaultLength;
+            if(maxPoolLength < defaultLength)
+            {            
+                maxPoolLength = defaultLength;
+            }
+            else if(maxPoolLength == 0)
+            {
+                maxPoolLength = defaultLength;
+            }
+            else if(maxPoolLength < 16)
+            {
+                maxPoolLength = 16;
+            }
+
             fcore = pool.Rent(maxPoolLength);
             ctobjects = poolObjects.Rent(maxPoolLength);
             ctdeltas = poolDeltas.Rent(maxPoolLength);
@@ -172,6 +184,7 @@ namespace CompactTween.Extension
                     else
                     {
                         newarr[i]._index = -1;
+                        newdeltas[i]._loopCount = 1;
                     }
                 }
 
@@ -190,9 +203,17 @@ namespace CompactTween.Extension
             {
                 pool.Return(fcore);
                 poolObjects.Return(ctobjects);
+                poolDeltas.Return(ctdeltas);
+                poolVectors.Return(ctvectors);
+
                 fcore = pool.Rent(maxPoolLength);
                 ctobjects = poolObjects.Rent(maxPoolLength);
-                CPlayerLoop.Resize(true);
+                ctdeltas = poolDeltas.Rent(maxPoolLength);
+                ctvectors = poolVectors.Rent(maxPoolLength);
+                //CPlayerLoop.Resize(true);
+
+                CPlayerLoop.DefaultPool();
+                Init();
             }
         }
         /// <summary>Instantiates new interpolator.</summary>
