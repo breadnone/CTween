@@ -81,15 +81,15 @@ namespace CompactTween.Extension
         /// <summary>Initialization.</summary>
         public static void Init(int defaultLength = 16)
         {
-            if(maxPoolLength < defaultLength)
-            {            
-                maxPoolLength = defaultLength;
-            }
-            else if(maxPoolLength == 0)
+            if (maxPoolLength < defaultLength)
             {
                 maxPoolLength = defaultLength;
             }
-            else if(maxPoolLength < 16)
+            else if (maxPoolLength == 0)
+            {
+                maxPoolLength = defaultLength;
+            }
+            else if (maxPoolLength < 16)
             {
                 maxPoolLength = 16;
             }
@@ -244,8 +244,8 @@ namespace CompactTween.Extension
         public static void InstantiateRotateAround(Transform transform, Vector3 target, Vector3 direction, float angle, float duration, bool isLocal, out int index)
         {
             var core = new CTcore();
-            core.setInit(transform.gameObject.GetInstanceID(), LerpCoreType.RotateAround, new Quaternion(angle, transform.position.x, transform.position.y, transform.position.z),  isLocal);
-            
+            core.setInit(transform.gameObject.GetInstanceID(), LerpCoreType.RotateAround, new Quaternion(angle, transform.position.x, transform.position.y, transform.position.z), isLocal);
+
             index = GetArraySlot(ref core, transform);
             ctdeltas[index]._duration = duration;
             ctvectors[index].set(target, direction);
@@ -256,7 +256,7 @@ namespace CompactTween.Extension
         {
             var core = new CTcore();
             core.setInit(transform.gameObject.GetInstanceID(), LerpCoreType.Rotation, !isLocal ? transform.rotation : transform.localRotation, isLocal);
-            
+
             index = GetArraySlot(ref core, transform);
             ctdeltas[index]._duration = duration;
             ctvectors[index].set(new Vector3(angle, 0f, 0f), direction);
@@ -620,7 +620,7 @@ namespace CompactTween.Extension
             if (!onRepeat())
             {
                 var tmp = ctvectors[_index].get;
-                Vector3 targetDelta = Vector3.LerpUnclamped(tmp.from, tmp.to, tick) - transform.position;
+                Vector3 targetDelta = Vector3.LerpUnclamped(tmp.from, tmp.to, tick) - (!isLocal ? transform.position : transform.localPosition);
                 transform.Translate(targetDelta, !isLocal ? Space.World : Space.Self);
                 return false;
             }
