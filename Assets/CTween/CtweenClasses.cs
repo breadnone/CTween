@@ -220,13 +220,9 @@ namespace CompactTween.Extension
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void InstantiateVector(Transform transform, Vector3 from, Vector3 to, float duration, LerpCoreType mode, bool isLocal, out int index)
         {
-            var core = new CTcore
-            {
-                _id = transform.gameObject.GetInstanceID(),
-                _mode = mode
-            };
+            var core = new CTcore();
+            core.setInit(transform.gameObject.GetInstanceID(), mode, isLocal);
 
-            core.selectIslocal(isLocal);
             index = GetArraySlot(ref core, transform);
             ctdeltas[index]._duration = duration;
             ctvectors[index].set(from, to);
@@ -235,11 +231,8 @@ namespace CompactTween.Extension
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void InstantiateFollow(Transform transform, Transform to, float smoothTime, Vector3 velocity, out int index)
         {
-            var core = new CTcore
-            {
-                _id = transform.gameObject.GetInstanceID(),
-                _mode = LerpCoreType.Follow
-            };
+            var core = new CTcore();
+            core.setInit(transform.gameObject.GetInstanceID(), LerpCoreType.Follow, false);
 
             index = GetArraySlot(ref core, transform);
             ctdeltas[index]._duration = float.PositiveInfinity;
@@ -250,14 +243,9 @@ namespace CompactTween.Extension
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void InstantiateRotateAround(Transform transform, Vector3 target, Vector3 direction, float angle, float duration, bool isLocal, out int index)
         {
-            var core = new CTcore
-            {
-                _id = transform.gameObject.GetInstanceID(),
-                _mode = LerpCoreType.RotateAround
-            };
-
-            core.setFromRotation(new Quaternion(angle, transform.position.x, transform.position.y, transform.position.z));
-            core.selectIslocal(isLocal);
+            var core = new CTcore();
+            core.setInit(transform.gameObject.GetInstanceID(), LerpCoreType.RotateAround, new Quaternion(angle, transform.position.x, transform.position.y, transform.position.z),  isLocal);
+            
             index = GetArraySlot(ref core, transform);
             ctdeltas[index]._duration = duration;
             ctvectors[index].set(target, direction);
@@ -266,14 +254,9 @@ namespace CompactTween.Extension
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void InstantiateQuat(Transform transform, Vector3 direction, float angle, float duration, bool isLocal, out int index)
         {
-            var core = new CTcore
-            {
-                _id = transform.gameObject.GetInstanceID(),
-                _mode = LerpCoreType.Rotation
-            };
-
-            core.selectIslocal(isLocal);
-            core.setFromRotation(!isLocal ? transform.rotation : transform.localRotation);
+            var core = new CTcore();
+            core.setInit(transform.gameObject.GetInstanceID(), LerpCoreType.Rotation, !isLocal ? transform.rotation : transform.localRotation, isLocal);
+            
             index = GetArraySlot(ref core, transform);
             ctdeltas[index]._duration = duration;
             ctvectors[index].set(new Vector3(angle, 0f, 0f), direction);
@@ -282,11 +265,8 @@ namespace CompactTween.Extension
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void InstantiateFloat(int id, float from, float to, float duration, Action<float> func, out int index, bool specialCase = false)
         {
-            var core = new CTcore
-            {
-                _id = id,
-                _mode = LerpCoreType.Float
-            };
+            var core = new CTcore();
+            core.setInit(id, LerpCoreType.Float, false);
 
             index = GetArraySlot(ref core, null);
             ctdeltas[index]._duration = duration;
@@ -324,7 +304,8 @@ namespace CompactTween.Extension
                     if (fcore[i].index != -1)
                         continue;
 
-                    core._index = (short)i;
+                    core.setIndex((short)i);
+
                     fcore[i] = core;
                     idx = i;
                     ctobjects[i].AssignObjects(transform, null);
@@ -357,6 +338,21 @@ namespace CompactTween.Extension
         LerpCoreType _mode;
         /// <summary>Boolean states.</summary>
         BoolProperty _states;
+
+        public void setInit(int id, LerpCoreType mode, bool isLocal)
+        {
+            _mode = mode;
+            _id = id;
+            selectIslocal(isLocal);
+        }
+        public void setInit(int id, LerpCoreType mode, Quaternion fromrot, bool isLocal)
+        {
+            _mode = mode;
+            _id = id;
+            selectIslocal(isLocal);
+            _initRotation = fromrot;
+        }
+        public void setIndex(short index) => _index = index;
         public ref CTcore ctcore => ref fcore[_index];
         public ref CTdelta delta => ref ctdeltas[_index];
         public ref CTvector vector => ref ctvectors[_index];
@@ -404,9 +400,9 @@ namespace CompactTween.Extension
                 ctobjects[_index].Reset();
             }
 
-            ctdeltas[index] = default;
-            ctdeltas[index].setDefault();
-            ctvectors[index] = default;
+            ctdeltas[_index] = default;
+            ctdeltas[_index].setDefault();
+            ctvectors[_index] = default;
 
             _id = -1;
             _index = -1;
@@ -421,7 +417,7 @@ namespace CompactTween.Extension
         /// <summary>Retrieves the initial position value of a transform.</summary>
         public Vector3 initPosition => new Vector3(_initRotation.y, _initRotation.z, _initRotation.w);
         /// <summary>Sets from.</summary>
-        public void setFrom(Vector3 from) => ctvectors[index].from = from;
+        public void setFrom(Vector3 from) => vector.from = from;
         /// <summary>Invoked on completion.</summary>
         void OnComplete()
         {
@@ -508,7 +504,6 @@ namespace CompactTween.Extension
             switch (_mode)
             {
                 case LerpCoreType.Position:
-                case LerpCoreType.Translate:
                     wasComplete = interpPosition();
                     break;
                 case LerpCoreType.Rotation:
@@ -531,6 +526,9 @@ namespace CompactTween.Extension
                     break;
                 case LerpCoreType.Follow:
                     follow();
+                    break;
+                case LerpCoreType.Translate:
+                    wasComplete = interpTranslate();
                     break;
             }
 
@@ -575,8 +573,9 @@ namespace CompactTween.Extension
         }
         /// <summary>Cancels the running tween.</summary>
         public void Cancel(bool invokeOnComplete = false, bool invokeLastComplete = true) => Clear(invokeOnComplete, invokeLastComplete);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         /// <summary>Update the delta tick.</summary>
-        void updateTime() => ctdeltas[index]._runningTime += !isFlipTick ? (!isUnscaled ? Time.deltaTime : Time.unscaledDeltaTime) : -(!isUnscaled ? Time.deltaTime : Time.unscaledDeltaTime);
+        void updateTime() => delta._runningTime += !isFlipTick ? (!isUnscaled ? Time.deltaTime : Time.unscaledDeltaTime) : -(!isUnscaled ? Time.deltaTime : Time.unscaledDeltaTime);
         /// <summary>Updates the transform properties (from and to values or rotation).</summary>
         public void UpdateTransform()
         {
@@ -611,6 +610,18 @@ namespace CompactTween.Extension
                     transform.localPosition = lerpVector3(tick);
                 }
 
+                return false;
+            }
+
+            return true;
+        }
+        bool interpTranslate()
+        {
+            if (!onRepeat())
+            {
+                var tmp = ctvectors[_index].get;
+                Vector3 targetDelta = Vector3.LerpUnclamped(tmp.from, tmp.to, tick) - transform.position;
+                transform.Translate(targetDelta, !isLocal ? Space.World : Space.Self);
                 return false;
             }
 
@@ -882,7 +893,7 @@ namespace CompactTween.Extension
         /// <summary>Triggers pingpong state.</summary>
         public void selectPingpong() => _states |= BoolProperty.Pingpong;
         /// <summary>Sets the locality.</summary>
-        public void selectIslocal(bool islocal)
+        void selectIslocal(bool islocal)
         {
             if (!islocal)
             {
@@ -892,14 +903,14 @@ namespace CompactTween.Extension
             _states |= BoolProperty.Islocal;
         }
         /// <summary>Flipping the loop cycle state.</summary>
-        public void selectFliptick(bool state)
+        void selectFliptick(bool state)
         {
             if (!state)
                 _states &= ~BoolProperty.Fliptick;
             else
                 _states |= BoolProperty.Fliptick;
 
-            ctdeltas[index].FlipSwitch(isFlipTick);
+            delta.FlipSwitch(isFlipTick);
         }
         /// <summary>Sets the callback repeat flag.</summary>
         public void selectOncompleterepeat() => _states |= BoolProperty.Completerepeat;
@@ -918,7 +929,7 @@ namespace CompactTween.Extension
         /// <summary>Sets the infinite loop flag.</summary>
         public void selectInfiniteloop() => _states |= BoolProperty.Infiniteloop;
         /// <summary>Sets the delegate assignment flag.</summary>
-        public void selectDelegate() => _states |= BoolProperty.Delegatewasassigned;
+        void selectDelegate() => _states |= BoolProperty.Delegatewasassigned;
         /// <summary>Clears the flags.</summary>
         void ClearFlags()
         {
