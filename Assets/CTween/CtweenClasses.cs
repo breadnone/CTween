@@ -65,7 +65,7 @@ namespace CompactTween.Extension
             return ref dummy;
         }
         /// <summary>Finds the non-main transforms that are related to a tween.</summary>
-        /// <param name="index"></param>
+        /// <param name="index">Array index.</param>
         static Transform FindExternalTransform(int index)
         {
             for (int i = 0; i < exttransforms.Count; i++)
@@ -171,7 +171,9 @@ namespace CompactTween.Extension
                 var newvectors = poolVectors.Rent(count * 2);
                 var newdeltas = poolDeltas.Rent(count * 2);
 
-                for (int i = 0; i < newarr.Length; i++)
+                var len = newarr.Length;
+
+                for (int i = 0; i < len; i++)
                 {
                     if (i < count)
                     {
@@ -401,7 +403,7 @@ namespace CompactTween.Extension
             }
 
             ctdeltas[_index] = default;
-            ctdeltas[_index].setDefault();
+            delta.setDefault();
             ctvectors[_index] = default;
 
             _id = -1;
@@ -973,6 +975,7 @@ namespace CompactTween.Extension
         }
     }
     [Serializable]
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct CTvector
     {
         public Vector3 from;
@@ -989,6 +992,7 @@ namespace CompactTween.Extension
         public float lerpFloat(float tick) => from.x + (from.y - from.x) * tick;
     }
     [Serializable]
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct CTdelta
     {
         public float _duration;
