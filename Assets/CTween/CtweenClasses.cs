@@ -634,8 +634,14 @@ namespace CompactTween.Extension
         {
             if (!onRepeat())
             {
+                if (!isLocal)
+                {
                     transform.position = vector.lerp(tick);
-
+                }
+                else
+                {
+                    transform.localPosition = vector.lerp(tick);
+                }
 
                 return false;
             }

@@ -166,7 +166,6 @@ namespace CompactTween
         public static CoreTween move(Transform transform, Vector3 to, float duration)
         {
             var dummy = new CoreTween();
-            to = transform.TransformPoint(to);
             CTcore.InstantiateVector(transform, transform.position, to, duration, LerpCoreType.Position, false, out int index);
             dummy.index = index;
             return dummy;
