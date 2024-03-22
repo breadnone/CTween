@@ -750,12 +750,12 @@ namespace CompactTween
             dummy.index = index;
             return dummy;
         }
-        public static CoreTween ctAnim(this RectTransform rectTransform, Sprite[] sprites, float duration)
+        public static CoreTween ctAnim(this RectTransform rectTransform, Sprite[] sprites, int framePerSecond)
         {
             var dummy = new CoreTween();
-            float oneframe = duration / sprites.Length;
+            var fps = 1 / 60f * framePerSecond;
 
-            CTcore.InstantiateFloat(rectTransform.gameObject.GetInstanceID(), 0f, 1000f, duration, null, out int index, true);
+            CTcore.InstantiateFloat(rectTransform.gameObject.GetInstanceID(), 0f, 1000f, float.PositiveInfinity, null, out int index, true);
             dummy.index = index;
 
             var img = rectTransform.gameObject.GetComponent<UnityEngine.UI.Image>();
@@ -769,6 +769,7 @@ namespace CompactTween
             {
                 if(complete)
                 {
+                    dummy.Cancel();
                     return;
                 }
 
@@ -787,7 +788,7 @@ namespace CompactTween
                 {
                     var t = Time.realtimeSinceStartup;
 
-                    if (lastFrame + oneframe < t)
+                    if (lastFrame + fps < t)
                     {
                         img.sprite = sprites[lastIndex];
                         lastFrame = t;
@@ -807,7 +808,7 @@ namespace CompactTween
                 {
                     var t = Time.realtimeSinceStartup;
                     
-                    if (lastFrame + oneframe < t)
+                    if (lastFrame + fps < t)
                     {
                         img.sprite = sprites[lastIndex];
                         lastFrame = t;

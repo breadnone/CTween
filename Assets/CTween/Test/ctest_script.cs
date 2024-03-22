@@ -1,13 +1,9 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Diagnostics;
 using CompactTween;
 using CompactTween.Extension;
 using TMPro;
 using System.Runtime.InteropServices;
-using System.Runtime.CompilerServices;
-using System;
 
 public class ctest_script : MonoBehaviour
 {
@@ -20,6 +16,7 @@ public class ctest_script : MonoBehaviour
     [SerializeField] private int loopCount;
     [SerializeField] private bool infiniteLoop = false;
     [SerializeField] private float duration;
+    [SerializeField] private int framerate = 12;
     [SerializeField] private TMP_Text text;
     [SerializeField] private CanvasGroup canvas;
     [SerializeField] private Ease ease;
@@ -48,6 +45,11 @@ public class ctest_script : MonoBehaviour
         }).onCompleteRepeat(oncompleterepeat).onInfinite(infiniteLoop);
         
         activeIndex = t.index;
+    }
+    public void Translate()
+    {
+        mov.transform.position = defPos;
+        CTween.translate(mov.transform, targetdefpos, duration, false).onPingPong(true).onLoopCount(loopCount).onEase(ease);
     }
     public void MoveSpeed()
     {
@@ -83,11 +85,11 @@ public class ctest_script : MonoBehaviour
             var go = GameObject.Instantiate(mov, defPos, mov.transform.rotation);
             go.transform.SetParent(mov.transform.parent.transform, true);
             var y = UnityEngine.Random.Range(defPos.y - 400f, defPos.y + 400f);
+            var rdm = UnityEngine.Random.Range(0.5f, duration);
             UnityEngine.Profiling.Profiler.BeginSample("CTween-Stress test");
-            CTween.move(go.transform, new Vector3(target.transform.position.x, y, target.transform.position.z), UnityEngine.Random.Range(0.5f, duration)).onEase(ease).onLoopCount(1).onPingPong(true).onEase(Ease.EaseInBounce);
-
+            CTween.move(go.transform, new Vector3(target.transform.position.x, y, target.transform.position.z), rdm).onEase(ease).onLoopCount(1).onPingPong(true);
             UnityEngine.Profiling.Profiler.EndSample();
-            yield return new WaitForSeconds(0.15f);
+            yield return new WaitForSeconds(0.1f);
         }
     }
     public void Rotate()
@@ -96,7 +98,7 @@ public class ctest_script : MonoBehaviour
     }
     public void FloatValue()
     {
-        CTween.value(12, 0, angle, duration, (float value)=>
+        CTween.value(0, angle, duration, (float value)=>
         {
             text.SetText("value is -->   " + value);
         }).onLoopCount(loopCount).onPingPong(pingpong).onEase(ease);
@@ -132,7 +134,7 @@ public class ctest_script : MonoBehaviour
             sprites[i].gameObject.SetActive(false);
         }
 
-        spritecontainer.ctAnim(spr, duration).onPingPong(pingpong).onLoopCount(loopCount);
+        spritecontainer.ctAnim(spr, framerate).onPingPong(pingpong).onLoopCount(loopCount);
     }
     public void FollowTest()
     {

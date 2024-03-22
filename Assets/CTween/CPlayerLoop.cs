@@ -26,8 +26,7 @@ using System;
 using System.Linq;
 using System.Buffers;
 using CompactTween.Extension;
-using System.Collections;
-using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace CompactTween
 {
@@ -41,16 +40,28 @@ namespace CompactTween
         static ArrayPool<TimeStruct> staticPool = ArrayPool<TimeStruct>.Shared;
         /// <summary>Active tween instances.</summary>
         public static int activecount = 0;
+        public static float lastRun;
         public static void InitStaticArray()
         {
             activeCores = staticPool.Rent(CTcore.maxPoolLength);
         }
+        public static void UpdateTime()=> lastRun = Time.timeSinceLevelLoad + (5f * 60f);
         public static void WorkerUpdate()
         {
+            //TODO : Should not hold unused structs in those arrays for a long period of time. Thus shuffling will be needed.
+            
             if (activecount == 0)
             {
+                if(lastRun < Time.timeSinceLevelLoad)
+                {
+                    UpdateTime();
+                    CTcore.ClearPools();
+                }
+
                 return;
             }
+
+            UpdateTime();
 
             for (int i = 0; i < activeCores.Length; i++)
             {
@@ -61,16 +72,11 @@ namespace CompactTween
                     CTcore.fcore[t.index].Run();
                 }
             }
-
-            if (activecount == 0 && CTcore.fcore.Length > CTcore.maxPoolLength)
-            {
-                CTcore.Resize(true);
-            }
         }
         public static void InsertToActiveTweens(int index)
         {
             activecount++;
-            activeCores[index] = new TimeStruct(index, Time.frameCount + 1);
+            activeCores[index].set(index, Time.frameCount + 1);
         }
         public static void RemoveFromActiveTweens(int index)
         {
@@ -97,7 +103,7 @@ namespace CompactTween
                     }
                     else
                     {
-                        pool[i] = new TimeStruct(-1, -1);
+                        pool[i].set(-1, -1);
                     }
                 }
 
@@ -116,11 +122,16 @@ namespace CompactTween
             }
         }
 
-        public static void DefaultPool()=> staticPool.Return(activeCores);
+        public static void DefaultPool()
+        {
+            staticPool.Return(activeCores);
+        }
+        public static void ClearPool()=> activeCores = null;
     }
 
     /// <summary>Tween validator struct.</summary>
     [Serializable]
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct TimeStruct
     {
         int _index;
@@ -229,11 +240,18 @@ namespace CompactTween
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void Init()
         {
-            CTcore.Init();
+            //CTcore.Init();
             tweenLoop = new CtweenLoop();
             InstantiateMono();
-            //UnityEditor.AssemblyReloadEvents.beforeAssemblyReload += ()=> {};
-            //UnityEditor.AssemblyReloadEvents.afterAssemblyReload += ()=> {};
+            //CPlayerLoop.UpdateTime();
+            
+            #if UNITY_EDITOR
+            UnityEditor.AssemblyReloadEvents.beforeAssemblyReload += ()=> 
+            {
+                CTween.CancelAll();
+                CTcore.ClearPools(true);
+            };
+            #endif
         }
     }
 }

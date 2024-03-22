@@ -19,7 +19,6 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
@@ -35,16 +34,20 @@ namespace CompactTween.Extension
     {
         static CTcore dummy = new CTcore { _id = -1, _index = -1 };
         /// <summary>Tween instances.</summary>
-        public static CTcore[] fcore;
+        public static CTcore[] fcore{get;private set;}
         /// <summary>UnityObjects.</summary>
-        public static CTobject[] ctobjects;
+        public static CTobject[] ctobjects{get; private set;}
+        /// <summary>Common properties.</summary>
         static CTdelta[] ctdeltas;
+        /// <summary>Vector objects.</summary>
         static CTvector[] ctvectors;
         /// <summary>CTcore pool.</summary>
         static ArrayPool<CTcore> pool = ArrayPool<CTcore>.Shared;
         /// <summary>Object pool.</summary>
         static ArrayPool<CTobject> poolObjects = ArrayPool<CTobject>.Shared;
+        /// <summary>Vector objects.</summary>
         static ArrayPool<CTvector> poolVectors = ArrayPool<CTvector>.Shared;
+        /// <summary>Property objects.</summary>
         static ArrayPool<CTdelta> poolDeltas = ArrayPool<CTdelta>.Shared;
         /// <summary>The max limit for the pool. Default is 16 and will be resized automatically as needed.</summary>
         public static int maxPoolLength { get; set; } = 16;
@@ -57,6 +60,18 @@ namespace CompactTween.Extension
             for (int i = 0; i < fcore.Length; i++)
             {
                 if (fcore[i]._id != instanceId)
+                    continue;
+
+                return ref fcore[i];
+            }
+
+            return ref dummy;
+        }
+        public static ref CTcore getTweenViaIndex(int index)
+        {
+            for (int i = 0; i < fcore.Length; i++)
+            {
+                if (fcore[i].index != index)
                     continue;
 
                 return ref fcore[i];
@@ -105,6 +120,33 @@ namespace CompactTween.Extension
             {
                 CPlayerLoop.activeCores[i].set(-1, -1);
                 fcore[i].setDefault(false);
+                ctdeltas[i].setDefault();
+            }
+        }
+        /// <summary>Clears the pool.</summary>
+        public static void ClearPools(bool clean = false)
+        {
+            if (fcore != null)
+            {
+                if(clean)
+                {
+                    for(int i = 0; i < ctobjects.Length; i++)
+                    {
+                        ctobjects[i].Reset();
+                    }
+                }
+
+                pool.Return(fcore);
+                poolObjects.Return(ctobjects);
+                poolDeltas.Return(ctdeltas);
+                poolVectors.Return(ctvectors);
+                CPlayerLoop.DefaultPool();
+
+                fcore = null;
+                ctobjects = null;
+                ctdeltas = null;
+                ctvectors = null;
+                CPlayerLoop.ClearPool();
             }
         }
         /// <summary>Tweening status.</summary>
@@ -161,62 +203,43 @@ namespace CompactTween.Extension
         /// <summary>Resizes the array length.</summary>
         /// <param name="setdefault">Set default state.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Resize(bool setdefault)
+        public static void Resize()
         {
-            if (!setdefault)
+            var count = fcore.Length;
+            var newarr = pool.Rent(count * 2);
+            var newobjs = poolObjects.Rent(count * 2);
+            var newvectors = poolVectors.Rent(count * 2);
+            var newdeltas = poolDeltas.Rent(count * 2);
+
+            var len = newarr.Length;
+
+            for (int i = 0; i < len; i++)
             {
-                var count = fcore.Length;
-                var newarr = pool.Rent(count * 2);
-                var newobjs = poolObjects.Rent(count * 2);
-                var newvectors = poolVectors.Rent(count * 2);
-                var newdeltas = poolDeltas.Rent(count * 2);
-
-                var len = newarr.Length;
-
-                for (int i = 0; i < len; i++)
+                if (i < count)
                 {
-                    if (i < count)
-                    {
-                        newarr[i] = fcore[i];
-                        newobjs[i].AssignObjects(ctobjects[i].GetObjects.transform, ctobjects[i].GetObjects.invoke);
-                        ctobjects[i].Reset();
-                        newvectors[i] = ctvectors[i];
-                        newdeltas[i] = ctdeltas[i];
-                    }
-                    else
-                    {
-                        newarr[i]._index = -1;
-                        newdeltas[i]._loopCount = 1;
-                    }
+                    newarr[i] = fcore[i];
+                    newobjs[i].AssignObjects(ctobjects[i].GetObjects.transform, ctobjects[i].GetObjects.invoke);
+                    ctobjects[i].Reset();
+                    newvectors[i] = ctvectors[i];
+                    newdeltas[i] = ctdeltas[i];
                 }
-
-                pool.Return(fcore);
-                poolObjects.Return(ctobjects);
-                poolVectors.Return(ctvectors);
-                poolDeltas.Return(ctdeltas);
-
-                fcore = newarr;
-                ctobjects = newobjs;
-                ctvectors = newvectors;
-                ctdeltas = newdeltas;
-                CPlayerLoop.Resize(false);
+                else
+                {
+                    newarr[i].setDefault(false);
+                    newdeltas[i].setDefault();
+                }
             }
-            else
-            {
-                pool.Return(fcore);
-                poolObjects.Return(ctobjects);
-                poolDeltas.Return(ctdeltas);
-                poolVectors.Return(ctvectors);
 
-                fcore = pool.Rent(maxPoolLength);
-                ctobjects = poolObjects.Rent(maxPoolLength);
-                ctdeltas = poolDeltas.Rent(maxPoolLength);
-                ctvectors = poolVectors.Rent(maxPoolLength);
-                //CPlayerLoop.Resize(true);
+            pool.Return(fcore);
+            poolObjects.Return(ctobjects);
+            poolVectors.Return(ctvectors);
+            poolDeltas.Return(ctdeltas);
 
-                CPlayerLoop.DefaultPool();
-                Init();
-            }
+            fcore = newarr;
+            ctobjects = newobjs;
+            ctvectors = newvectors;
+            ctdeltas = newdeltas;
+            CPlayerLoop.Resize(false);
         }
         /// <summary>Instantiates new interpolator.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -297,9 +320,14 @@ namespace CompactTween.Extension
         /// <summary>Gets/sets array pool slot.</summary>
         public static int GetArraySlot(ref CTcore core, Transform transform)
         {
+            if (fcore == null)
+            {
+                Init();
+            }
+
             var idx = -1;
 
-            void Insert(ref CTcore core, Transform transform)
+            int Insert(ref CTcore core, Transform transform)
             {
                 for (int i = 0; i < fcore.Length; i++)
                 {
@@ -309,19 +337,20 @@ namespace CompactTween.Extension
                     core.setIndex((short)i);
 
                     fcore[i] = core;
-                    idx = i;
                     ctobjects[i].AssignObjects(transform, null);
                     CPlayerLoop.InsertToActiveTweens(i);
-                    return;
+                    return i;
                 }
+
+                return -1;
             }
 
-            Insert(ref core, transform);
+            idx = Insert(ref core, transform);
 
             if (idx == -1)
             {
-                Resize(false);
-                Insert(ref core, transform);
+                Resize();
+                idx = Insert(ref core, transform);
             }
 
             return idx;
@@ -336,11 +365,10 @@ namespace CompactTween.Extension
         int _id;
         /// <summary>The index in the array.</summary>
         short _index;
-        /// <summary>Tween mode.</summary>
-        LerpCoreType _mode;
         /// <summary>Boolean states.</summary>
         BoolProperty _states;
-
+        /// <summary>Tween mode.</summary>
+        LerpCoreType _mode;
         public void setInit(int id, LerpCoreType mode, bool isLocal)
         {
             _mode = mode;
@@ -354,6 +382,8 @@ namespace CompactTween.Extension
             selectIslocal(isLocal);
             _initRotation = fromrot;
         }
+        public Vector3 getVectorProgress => Vector3.LerpUnclamped(vector.from, vector.to, tick);
+        public float getFloatProgress => Mathf.LerpUnclamped(vector.from.x, vector.from.y, tick);
         public void setIndex(short index) => _index = index;
         public ref CTcore ctcore => ref fcore[_index];
         public ref CTdelta delta => ref ctdeltas[_index];
@@ -367,7 +397,7 @@ namespace CompactTween.Extension
         /// <summary>Interpolation type.</summary>
         public LerpCoreType mode => _mode;
         /// <summary>Speed based.</summary>
-        public void setSpeed(byte value) => ctdeltas[_index]._speed = value;
+        public void setSpeed(float value) => ctdeltas[_index]._speed = value;
         /// <summary>Easing function type.</summary>
         public void setEase(byte value) => ctdeltas[_index]._ease = value;
         /// <summary>Loop count.</summary>
@@ -397,20 +427,19 @@ namespace CompactTween.Extension
         /// <summary>Sets default property.</summary>
         void setDefault(bool resetCtObjects)
         {
-            if (resetCtObjects)
+            if (_index > -1)
             {
-                ctobjects[_index].Reset();
-            }
+                if (resetCtObjects)
+                {
+                    ctobjects[_index].Reset();
+                }
 
-            ctdeltas[_index] = default;
-            delta.setDefault();
-            ctvectors[_index] = default;
+                ctdeltas[_index].setDefault();
+            }
 
             _id = -1;
             _index = -1;
             _mode = LerpCoreType.Position;
-            _initRotation = Quaternion.identity;
-
             ClearFlags();
         }
         /// <summary>Sets from rotation.</summary>
@@ -429,6 +458,8 @@ namespace CompactTween.Extension
         /// <summary>Invoked during loop cycle.</summary>
         void OnLoop()
         {
+            var zeroone = !isFlipTick ? 1f : 0f;
+
             switch (_mode)
             {
                 case LerpCoreType.Position:
@@ -436,11 +467,11 @@ namespace CompactTween.Extension
 
                     if (!isLocal)
                     {
-                        transform.position = lerpVector3(!isFlipTick ? 1f : 0f);
+                        transform.position = vector.lerp(zeroone);
                     }
                     else
                     {
-                        transform.localPosition = lerpVector3(!isFlipTick ? 1f : 0f);
+                        transform.localPosition = vector.lerp(zeroone);
                     }
 
                     break;
@@ -448,37 +479,37 @@ namespace CompactTween.Extension
 
                     if (!isLocal)
                     {
-                        transform.rotation = lerpQuat(!isFlipTick ? 1f : 0f);
+                        transform.rotation = lerpQuat(zeroone);
                     }
                     else
                     {
-                        transform.localRotation = lerpQuat(!isFlipTick ? 1f : 0f);
+                        transform.localRotation = lerpQuat(zeroone);
                     }
 
                     break;
                 case LerpCoreType.Scale:
-                    transform.localScale = lerpVector3(!isFlipTick ? 1f : 0f);
+                    transform.localScale = vector.lerp(zeroone);
                     break;
                 case LerpCoreType.Float:
 
                     if (isDelegateAssigned)
                     {
-                        callback(0, lerpFloat(!isFlipTick ? 1f : 0f));
+                        callback(0, vector.lerpFloat(zeroone));
                     }
 
                     break;
                 case LerpCoreType.AnchoredPosition:
                     if (!isLocal)
                     {
-                        rectTransform.anchoredPosition3D = lerpVector3(!isFlipTick ? 1f : 0f);
+                        rectTransform.anchoredPosition3D = vector.lerp(zeroone);
                     }
                     else
                     {
-                        rectTransform.anchoredPosition = lerpVector3(!isFlipTick ? 1f : 0f);
+                        rectTransform.anchoredPosition = vector.lerp(zeroone);
                     }
                     break;
                 case LerpCoreType.SizeDelta:
-                    rectTransform.sizeDelta = lerpVector3(!isFlipTick ? 1f : 0f);
+                    rectTransform.sizeDelta = vector.lerp(zeroone);
                     break;
                 case LerpCoreType.RotateAround:
                     if (!isLocal)
@@ -603,14 +634,8 @@ namespace CompactTween.Extension
         {
             if (!onRepeat())
             {
-                if (!isLocal)
-                {
-                    transform.position = lerpVector3(tick);
-                }
-                else
-                {
-                    transform.localPosition = lerpVector3(tick);
-                }
+                    transform.position = vector.lerp(tick);
+
 
                 return false;
             }
@@ -634,13 +659,13 @@ namespace CompactTween.Extension
         {
             if (!onRepeat())
             {
-                if (isLocal)
+                if (!isLocal)
                 {
-                    rectTransform.anchoredPosition3D = lerpVector3(tick);
+                    rectTransform.anchoredPosition3D = vector.lerp(tick);
                 }
                 else
                 {
-                    rectTransform.anchoredPosition = lerpVector3(tick);
+                    rectTransform.anchoredPosition = vector.lerp(tick);
                 }
 
                 return false;
@@ -698,7 +723,7 @@ namespace CompactTween.Extension
         {
             if (!onRepeat())
             {
-                transform.localScale = lerpVector3(tick); //redirect the tick to easing function here.
+                transform.localScale = vector.lerp(tick); //redirect the tick to easing function here.
                 return false;
             }
 
@@ -709,7 +734,7 @@ namespace CompactTween.Extension
         {
             if (!onRepeat())
             {
-                rectTransform.sizeDelta = lerpVector3(tick); //redirect the tick to easing function here.
+                rectTransform.sizeDelta = vector.lerp(tick); //redirect the tick to easing function here.
                 return false;
             }
 
@@ -720,7 +745,7 @@ namespace CompactTween.Extension
         {
             if (!onRepeat())
             {
-                callback(0, lerpFloat(tick));
+                callback(0, vector.lerpFloat(tick));
                 return false;
             }
 
@@ -761,7 +786,7 @@ namespace CompactTween.Extension
 
             if (!isFlipTick)
             {
-                if (tmp.speed == 0)
+                if (!tmp.speed)
                 {
                     if (tmp.runningTime < tmp.duration)
                     {
@@ -770,7 +795,7 @@ namespace CompactTween.Extension
                 }
                 else
                 {
-                    if (tmp.runningTime < 1)
+                    if (tmp.runningTime < 1f)
                     {
                         return false;
                     }
@@ -778,7 +803,7 @@ namespace CompactTween.Extension
             }
             else
             {
-                if (tmp.speed == 0)
+                if (!tmp.speed)
                 {
                     if (tmp.runningTime > 0f)
                     {
@@ -855,14 +880,8 @@ namespace CompactTween.Extension
 
             return true;
         }
-        /// <summary>Interpolates Vector3s.</summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        Vector3 lerpVector3(float tick) => vector.lerp(tick);
         /// <summary>Slerps two quaternions.</summary>
         Quaternion lerpQuat(float tick) => Quaternion.SlerpUnclamped(fromRotation, fromRotation * Quaternion.AngleAxis(from.x, isLocal ? transform.InverseTransformDirection(to).normalized : to.normalized), tick);
-        /// <summary>Interpolates floating points.</summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        float lerpFloat(float tick) => vector.lerpFloat(tick);
         /// <summary>Follows at far distance range.</summary>
         public void follow()
         {
@@ -975,7 +994,6 @@ namespace CompactTween.Extension
         }
     }
     [Serializable]
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct CTvector
     {
         public Vector3 from;
@@ -989,6 +1007,7 @@ namespace CompactTween.Extension
         /// <summary>Interpolates Vector3s.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector3 lerp(float tick) => new Vector3(from.x + (to.x - from.x) * tick, from.y + (to.y - from.y) * tick, from.z + (to.z - to.z) * tick);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float lerpFloat(float tick) => from.x + (from.y - from.x) * tick;
     }
     [Serializable]
@@ -997,36 +1016,41 @@ namespace CompactTween.Extension
     {
         public float _duration;
         public float _runningTime;
+        public float _speed;
+        public float _flipTick;
         public byte _loopCount;
         public byte _loopCounter;
-        public byte _speed;
         public byte _ease;
-        public bool _flipTick;
         public bool _unscaledTime;
         public float tick
         {
             get
             {
-                if (_speed == 0)
+                if (_speed < 0f)
                 {
                     return CTEasing.Easing(_ease, _runningTime / _duration);
                 }
                 else
                 {
-                    _runningTime = Mathf.MoveTowards(_runningTime, !_flipTick ? 1f : 0f, _speed / 3f * (!_unscaledTime ? Time.deltaTime : Time.unscaledDeltaTime));
+                    _runningTime = Mathf.MoveTowards(_runningTime, _flipTick, _speed * 0.25f * (!_unscaledTime ? Time.deltaTime : Time.unscaledDeltaTime));
                     return _runningTime;
                 }
             }
         }
-        public void FlipSwitch(bool flip) => _flipTick = flip;
+        public void FlipSwitch(bool flip) => _flipTick = !flip ? 1f : 0f;
         public void setDefault()
         {
             _loopCount = 1;
             _ease = (byte)Ease.EaseLinear;
+            _speed = -1f;
+            _runningTime = 0f;
+            _loopCounter = 0;
+            _unscaledTime = false;
+            _flipTick = 0f;
         }
         public void resetCounter() => _loopCounter = 0;
         public void incLoopCounter() => _loopCounter++;
-        public (float duration, float runningTime, byte speed) getTime => (_duration, _runningTime, _speed);
+        public (float duration, float runningTime, bool speed) getTime => (_duration, _runningTime, _speed > 0);
         public (byte loopCount, byte loopCounter) getLoops => (_loopCount, _loopCounter);
     }
     /// <summary>Interpolation types.</summary>
@@ -1041,10 +1065,5 @@ namespace CompactTween.Extension
         AnchoredPosition = 6,
         SizeDelta = 7,
         RotateAround = 8
-    }
-    public enum LoopType : int
-    {
-        Clamp = 0,
-        PingPong = 1
     }
 }
