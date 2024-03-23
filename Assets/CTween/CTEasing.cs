@@ -735,18 +735,14 @@ namespace CompactTween
                 ) * shake);
 
                 // Apply the offset relative to the original position and rotation
-                transform.localPosition = defpos + posOffset;
-                transform.localRotation = defrot * rotOffset;
+                //transform.localPosition = defpos + posOffset;
+                //transform.localRotation = defrot * rotOffset;
+                transform.SetLocalPositionAndRotation(defpos + posOffset, defrot * rotOffset);
                 trauma = Mathf.Clamp01(trauma - recoverySpeed * Time.deltaTime);
 
             }, out int index);
 
-            CTcore.RegisterLastOnComplete(index, () =>
-            {
-                transform.localPosition = defpos;
-                transform.localRotation = defrot;
-            });
-
+            CTcore.RegisterLastOnComplete(index, () => transform.SetLocalPositionAndRotation(defpos, defrot));
             dummy.index = index;
             return dummy;
         }
@@ -755,7 +751,7 @@ namespace CompactTween
             var dummy = new CoreTween();
             var fps = 1 / 60f * framePerSecond;
 
-            CTcore.InstantiateFloat(rectTransform.gameObject.GetInstanceID(), 0f, 1000f, float.PositiveInfinity, null, out int index, true);
+            CTcore.InstantiateFloat(rectTransform.gameObject.GetInstanceID(), 0f, 1000f, float.PositiveInfinity, x=>{}, out int index);
             dummy.index = index;
 
             var img = rectTransform.gameObject.GetComponent<UnityEngine.UI.Image>();
@@ -765,7 +761,7 @@ namespace CompactTween
             int lastIndex = 0;
             bool complete = false;
 
-            CTcore.RegisterOnUpdate(dummy.index, (System.Action<float>)(tick =>
+            CTcore.RegisterOnUpdate(dummy.index, (tick =>
             {
                 if(complete)
                 {
@@ -869,5 +865,6 @@ namespace CompactTween
 
             return dummy;
         }
+        
     }
 }

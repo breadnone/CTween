@@ -24,21 +24,41 @@ public class ctest_script : MonoBehaviour
     [SerializeField] private RectTransform spritecontainer;
     [SerializeField] private bool oncompleterepeat;
     [SerializeField] private bool exeOnCompleteCancel;
+    [SerializeField] private GameObject from3d;
+    [SerializeField] private GameObject to3d;
 
     Vector3 defPos;
     Vector3 rotDefPos;
     Vector3 targetdefpos;
+    Vector3 defpos3d;
+    Vector3 targetdefpos3d;
+    Quaternion defrot3d;
     void Start()
     {
+        defpos3d = from3d.transform.position;
+        targetdefpos3d = to3d.transform.position;
         defPos = mov.transform.position;
         rotDefPos = rotateObject.transform.position;
         targetdefpos = target.transform.position;
+        defrot3d = from3d.transform.rotation;
     }
     public void MoveToTarget()
     { 
         int counter = 0;
         mov.transform.position = defPos;
         var t =  CTween.move(mov.transform, targetdefpos, duration).onEase(ease).onPingPong(pingpong).onLoopCount(loopCount).onComplete(()=>
+        {
+            counter++;
+            Debug.Log("Complete --  " + counter);
+        }).onCompleteRepeat(oncompleterepeat).onInfinite(infiniteLoop);
+        
+        activeIndex = t.index;
+    }
+    public void MoveToTarget3D()
+    { 
+        int counter = 0;
+        from3d.transform.position = defpos3d;
+        var t =  CTween.move(from3d.transform, to3d.transform.position, duration).onEase(ease).onPingPong(pingpong).onLoopCount(loopCount).onComplete(()=>
         {
             counter++;
             Debug.Log("Complete --  " + counter);
@@ -95,6 +115,11 @@ public class ctest_script : MonoBehaviour
     public void Rotate()
     {
         CTween.rotate(rotateObject.transform, direction, angle, duration).onEase(ease).onPingPong(pingpong).onLoopCount(loopCount);
+    }
+    public void Rotate3D()
+    {
+        from3d.transform.rotation = defrot3d;
+        CTween.rotate(from3d.transform, direction, angle, duration).onEase(ease).onPingPong(pingpong).onLoopCount(loopCount);
     }
     public void FloatValue()
     {

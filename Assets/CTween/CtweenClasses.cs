@@ -34,9 +34,9 @@ namespace CompactTween.Extension
     {
         static CTcore dummy = new CTcore { _id = -1, _index = -1 };
         /// <summary>Tween instances.</summary>
-        public static CTcore[] fcore{get;private set;}
+        public static CTcore[] fcore { get; private set; }
         /// <summary>UnityObjects.</summary>
-        public static CTobject[] ctobjects{get; private set;}
+        public static CTobject[] ctobjects { get; private set; }
         /// <summary>Common properties.</summary>
         static CTdelta[] ctdeltas;
         /// <summary>Vector objects.</summary>
@@ -113,7 +113,6 @@ namespace CompactTween.Extension
             ctobjects = poolObjects.Rent(maxPoolLength);
             ctdeltas = poolDeltas.Rent(maxPoolLength);
             ctvectors = poolVectors.Rent(maxPoolLength);
-
             CPlayerLoop.InitStaticArray();
 
             for (int i = 0; i < CPlayerLoop.activeCores.Length; i++)
@@ -128,9 +127,9 @@ namespace CompactTween.Extension
         {
             if (fcore != null)
             {
-                if(clean)
+                if (clean)
                 {
-                    for(int i = 0; i < ctobjects.Length; i++)
+                    for (int i = 0; i < ctobjects.Length; i++)
                     {
                         ctobjects[i].Reset();
                     }
@@ -164,11 +163,16 @@ namespace CompactTween.Extension
         /// <param name="index">Index.</param>
         /// <param name="callback">Callback.</param>
         public static void RegisterLastOnComplete(int index, Action callback) => RegisterCalls(4, index, callback);
+        /// <summary>Callback on every loop cycle routine.</summary>
+        /// <param name="index"></param>
+        /// <param name="callback"></param>
+        public static void RegisterLoopCycle(int index, Action callback) => RegisterCalls(12, index, callback);
         /// <summary>Register a callback.</summary>
         static void RegisterCalls(int type, int index, Action callback, Action<float> updateCallback = null)
         {
             fcore[index].selectDelegate();
 
+            //Last invoked.
             if (type == 4)
             {
                 fcore[index].assignCallback((x, y) =>
@@ -179,6 +183,7 @@ namespace CompactTween.Extension
                     }
                 });
             }
+            //Invoked every frame.
             else if (type == 1)
             {
                 fcore[index].assignCallback((x, y) =>
@@ -189,6 +194,7 @@ namespace CompactTween.Extension
                     }
                 });
             }
+            //Invoked on complete.
             else if (type == 2)
             {
                 fcore[index].assignCallback((x, y) =>
@@ -199,7 +205,19 @@ namespace CompactTween.Extension
                     }
                 });
             }
+            //Invoked on every loop cycle.
+            else if(type == 12)
+            {
+                fcore[index].assignCallback((x, y) => 
+                {
+                    if(x == 12)
+                    {
+                        callback.Invoke();
+                    }
+                });           
+            }
         }
+
         /// <summary>Resizes the array length.</summary>
         /// <param name="setdefault">Set default state.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -247,10 +265,14 @@ namespace CompactTween.Extension
         {
             var core = new CTcore();
             core.setInit(transform.gameObject.GetInstanceID(), mode, isLocal);
-
             index = GetArraySlot(ref core, transform);
             ctdeltas[index]._duration = duration;
             ctvectors[index].set(from, to);
+
+            if(mode == LerpCoreType.Position)
+            {
+                fcore[index].setInitPosition();
+            }
         }
         /// <summary>Instantiates new interpolator.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -258,7 +280,6 @@ namespace CompactTween.Extension
         {
             var core = new CTcore();
             core.setInit(transform.gameObject.GetInstanceID(), LerpCoreType.Follow, false);
-
             index = GetArraySlot(ref core, transform);
             ctdeltas[index]._duration = float.PositiveInfinity;
             exttransforms.Add((to, index));
@@ -270,25 +291,21 @@ namespace CompactTween.Extension
         {
             var core = new CTcore();
             core.setInit(transform.gameObject.GetInstanceID(), LerpCoreType.RotateAround, new Quaternion(angle, transform.position.x, transform.position.y, transform.position.z), isLocal);
-
             index = GetArraySlot(ref core, transform);
             ctdeltas[index]._duration = duration;
             ctvectors[index].set(target, direction);
         }
-        /// <summary>Instantiates new interpolator.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void InstantiateQuat(Transform transform, Vector3 direction, float angle, float duration, bool isLocal, out int index)
+        public static void InstantiateQuat(Transform transform, Quaternion to, float duration, out int index)
         {
             var core = new CTcore();
-            core.setInit(transform.gameObject.GetInstanceID(), LerpCoreType.Rotation, !isLocal ? transform.rotation : transform.localRotation, isLocal);
-
+            core.setInit(transform.gameObject.GetInstanceID(), LerpCoreType.Rotation, transform.localRotation, true);
             index = GetArraySlot(ref core, transform);
             ctdeltas[index]._duration = duration;
-            ctvectors[index].set(new Vector3(angle, 0f, 0f), direction);
+            ctvectors[index].set(new Vector3(to.x, to.y, to.z), new Vector3(to.w, 0f, 0f));
         }
         /// <summary>Floats interpolation.</summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void InstantiateFloat(int id, float from, float to, float duration, Action<float> func, out int index, bool specialCase = false)
+        public static void InstantiateFloat(int id, float from, float to, float duration, Action<float> func, out int index)
         {
             var core = new CTcore();
             core.setInit(id, LerpCoreType.Float, false);
@@ -297,33 +314,20 @@ namespace CompactTween.Extension
             ctdeltas[index]._duration = duration;
             ctvectors[index].from = new Vector3(from, to, 0f);
 
-            if (func != null)
-            {
-                fcore[index].selectDelegate();
+            fcore[index].selectDelegate();
 
-                fcore[index].assignCallback((x, value) =>
-                {
-                    if (x == 0)
-                    {
-                        func.Invoke(value);
-                    }
-                });
-            }
-            else
+            fcore[index].assignCallback((x, value) =>
             {
-                if (!specialCase)
+                if (x == 0)
                 {
-                    throw new Exception("CTween error : Can't be empty/null.");
+                    func.Invoke(value);
                 }
-            }
+            });
         }
         /// <summary>Gets/sets array pool slot.</summary>
         public static int GetArraySlot(ref CTcore core, Transform transform)
         {
-            if (fcore == null)
-            {
-                Init();
-            }
+            if (fcore == null) Init();
 
             var idx = -1;
 
@@ -383,7 +387,6 @@ namespace CompactTween.Extension
             _initRotation = fromrot;
         }
         public Vector3 getVectorProgress => Vector3.LerpUnclamped(vector.from, vector.to, tick);
-        public float getFloatProgress => Mathf.LerpUnclamped(vector.from.x, vector.from.y, tick);
         public void setIndex(short index) => _index = index;
         public ref CTcore ctcore => ref fcore[_index];
         public ref CTdelta delta => ref ctdeltas[_index];
@@ -447,6 +450,7 @@ namespace CompactTween.Extension
         public void setFromRotation(Quaternion quaternion) => _initRotation = quaternion;
         /// <summary>Retrieves the initial position value of a transform.</summary>
         public Vector3 initPosition => new Vector3(_initRotation.y, _initRotation.z, _initRotation.w);
+        public void setInitPosition() => _initRotation = new Quaternion(from.x, from.y, from.z, 0f); 
         /// <summary>Sets from.</summary>
         public void setFrom(Vector3 from) => vector.from = from;
         /// <summary>Invoked on completion.</summary>
@@ -463,73 +467,35 @@ namespace CompactTween.Extension
             switch (_mode)
             {
                 case LerpCoreType.Position:
-                case LerpCoreType.Translate:
-
-                    if (!isLocal)
-                    {
-                        transform.position = vector.lerp(zeroone);
-                    }
-                    else
-                    {
-                        transform.localPosition = vector.lerp(zeroone);
-                    }
-
+                    transform.localPosition = vector.lerp(zeroone);
                     break;
                 case LerpCoreType.Rotation:
-
-                    if (!isLocal)
-                    {
-                        transform.rotation = lerpQuat(zeroone);
-                    }
-                    else
-                    {
-                        transform.localRotation = lerpQuat(zeroone);
-                    }
-
+                    transform.localRotation = lerpQuat(zeroone);
                     break;
                 case LerpCoreType.Scale:
                     transform.localScale = vector.lerp(zeroone);
                     break;
                 case LerpCoreType.Float:
-
-                    if (isDelegateAssigned)
-                    {
-                        callback(0, vector.lerpFloat(zeroone));
-                    }
-
+                    callback(0, vector.lerpFloat(zeroone));
                     break;
                 case LerpCoreType.AnchoredPosition:
-                    if (!isLocal)
-                    {
-                        rectTransform.anchoredPosition3D = vector.lerp(zeroone);
-                    }
-                    else
-                    {
-                        rectTransform.anchoredPosition = vector.lerp(zeroone);
-                    }
+                    interpPosition2D();
                     break;
                 case LerpCoreType.SizeDelta:
                     rectTransform.sizeDelta = vector.lerp(zeroone);
                     break;
                 case LerpCoreType.RotateAround:
-                    if (!isLocal)
-                    {
-                        transform.rotation = Quaternion.AngleAxis(!isFlipTick ? fromRotation.x : -fromRotation.x, to.normalized);
-                    }
-                    else
-                    {
-                        transform.localRotation = Quaternion.AngleAxis(!isFlipTick ? fromRotation.x : -fromRotation.x, to.normalized);
-                    }
+                    rotateAround(zeroone);
+                    break;
+                case LerpCoreType.Translate:
+                    translate(tick);
                     break;
             }
         }
         /// <summary>Interpolates. Must be called every frame.</summary>
         public void Run()
         {
-            if (isPaused)
-            {
-                return;
-            }
+            if (isPaused) return;
 
             updateTime();
             bool wasComplete = false;
@@ -549,7 +515,7 @@ namespace CompactTween.Extension
                     wasComplete = interpFloat();
                     break;
                 case LerpCoreType.SizeDelta:
-                    wasComplete = interpScale2D();
+                    wasComplete = interpSizeDelta();
                     break;
                 case LerpCoreType.AnchoredPosition:
                     wasComplete = interpPosition2D();
@@ -581,10 +547,7 @@ namespace CompactTween.Extension
         /// <summary>Pauses the tween.</summary>
         public void Pause()
         {
-            if (isPaused)
-            {
-                return;
-            }
+            if (isPaused) return;
 
             selectPause(true);
         }
@@ -592,10 +555,7 @@ namespace CompactTween.Extension
         /// <param name="updateTransform">Updates the transform.</param>
         public void Resume(bool updateTransform = false)
         {
-            if (!isPaused)
-            {
-                return;
-            }
+            if (!isPaused) return;
 
             if (updateTransform)
             {
@@ -615,17 +575,22 @@ namespace CompactTween.Extension
             switch (_mode)
             {
                 case LerpCoreType.Position:
-                case LerpCoreType.Translate:
-                    setFrom(!isLocal ? transform.position : transform.localPosition);
+                    setFrom(transform.localPosition);
                     break;
                 case LerpCoreType.Scale:
                     setFrom(transform.localScale);
                     break;
                 case LerpCoreType.Rotation:
-                    setFromRotation(!isLocal ? transform.rotation : transform.localRotation);
+                    setFromRotation(transform.localRotation);
                     break;
                 case LerpCoreType.AnchoredPosition:
                     setFrom(!isLocal ? rectTransform.anchoredPosition3D : rectTransform.anchoredPosition);
+                    break;
+                case LerpCoreType.Translate:
+                    setFrom(!isLocal ? transform.position : transform.localPosition);
+                    break;
+                case LerpCoreType.SizeDelta:
+                    setFrom(rectTransform.sizeDelta);
                     break;
             }
         }
@@ -634,15 +599,7 @@ namespace CompactTween.Extension
         {
             if (!onRepeat())
             {
-                if (!isLocal)
-                {
-                    transform.position = vector.lerp(tick);
-                }
-                else
-                {
-                    transform.localPosition = vector.lerp(tick);
-                }
-
+                transform.localPosition = vector.lerp(tick);
                 return false;
             }
 
@@ -652,13 +609,17 @@ namespace CompactTween.Extension
         {
             if (!onRepeat())
             {
-                var tmp = ctvectors[_index].get;
-                Vector3 targetDelta = Vector3.LerpUnclamped(tmp.from, tmp.to, tick) - (!isLocal ? transform.position : transform.localPosition);
-                transform.Translate(targetDelta, !isLocal ? Space.World : Space.Self);
+                translate(tick);
                 return false;
             }
 
             return true;
+        }
+        void translate(float tick)
+        {
+            var tmp = ctvectors[_index].get;
+            Vector3 targetDelta = Vector3.LerpUnclamped(tmp.from, tmp.to, tick) - (!isLocal ? transform.position : transform.localPosition);
+            transform.Translate(targetDelta, !isLocal ? Space.World : Space.Self);
         }
         /// <summary>Interpolates the position.</summary>
         bool interpPosition2D()
@@ -684,15 +645,7 @@ namespace CompactTween.Extension
         {
             if (!onRepeat())
             {
-                if (!isLocal)
-                {
-                    transform.rotation = lerpQuat(tick);
-                }
-                else
-                {
-                    transform.localRotation = lerpQuat(tick);
-                }
-
+                transform.localRotation = lerpQuat(tick);
                 return false;
             }
 
@@ -704,25 +657,27 @@ namespace CompactTween.Extension
         {
             if (!onRepeat())
             {
-                if (!isLocal)
-                {
-                    var angle = tick * fromRotation.x; // 360 degrees in the specified duration
-                    Quaternion rotation = Quaternion.AngleAxis(angle, to);
-                    Vector3 rotatedDirection = rotation * (initPosition - from);
-                    transform.SetPositionAndRotation(from + rotatedDirection, rotation);
-                }
-                else
-                {
-                    var angle = tick * fromRotation.x; // 360 degrees in the specified duration
-                    Quaternion rotation = Quaternion.AngleAxis(angle, to);
-                    Vector3 rotatedDirection = rotation * (initPosition - from);
-                    transform.SetLocalPositionAndRotation(from + rotatedDirection, rotation);
-                }
-
+                rotateAround(tick);
                 return false;
             }
 
             return true;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        void rotateAround(float tick)
+        {
+            Quaternion rotation = Quaternion.AngleAxis(tick * fromRotation.x, to);
+            Vector3 rotatedDirection = rotation * (initPosition - from);
+            rotatedDirection = from + rotatedDirection;
+
+            if (!isLocal)
+            {
+                transform.SetPositionAndRotation(rotatedDirection, rotation);
+            }
+            else
+            {
+                transform.SetLocalPositionAndRotation(rotatedDirection, rotation);
+            }
         }
         /// <summary>Interpolates the scale.</summary>
         bool interpScale()
@@ -736,7 +691,7 @@ namespace CompactTween.Extension
             return true;
         }
         /// <summary>Interpolates the scale.</summary>
-        bool interpScale2D()
+        bool interpSizeDelta()
         {
             if (!onRepeat())
             {
@@ -826,7 +781,6 @@ namespace CompactTween.Extension
             }
 
             OnLoop();
-
             var loops = delta.getLoops;
 
             if (loops.loopCount > 0)
@@ -887,7 +841,7 @@ namespace CompactTween.Extension
             return true;
         }
         /// <summary>Slerps two quaternions.</summary>
-        Quaternion lerpQuat(float tick) => Quaternion.SlerpUnclamped(fromRotation, fromRotation * Quaternion.AngleAxis(from.x, isLocal ? transform.InverseTransformDirection(to).normalized : to.normalized), tick);
+        Quaternion lerpQuat(float tick) => Quaternion.SlerpUnclamped(fromRotation, vector.getQuat, tick);
         /// <summary>Follows at far distance range.</summary>
         public void follow()
         {
@@ -922,10 +876,7 @@ namespace CompactTween.Extension
         /// <summary>Sets the locality.</summary>
         void selectIslocal(bool islocal)
         {
-            if (!islocal)
-            {
-                return;
-            }
+            if (!islocal) return;
 
             _states |= BoolProperty.Islocal;
         }
@@ -1010,6 +961,7 @@ namespace CompactTween.Extension
             from = froms;
             to = tos;
         }
+        public Quaternion getQuat => new Quaternion(from.x, from.y, from.z, to.x);
         /// <summary>Interpolates Vector3s.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector3 lerp(float tick) => new Vector3(from.x + (to.x - from.x) * tick, from.y + (to.y - from.y) * tick, from.z + (to.z - to.z) * tick);

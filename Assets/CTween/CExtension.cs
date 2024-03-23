@@ -166,7 +166,13 @@ namespace CompactTween
         public static CoreTween move(Transform transform, Vector3 to, float duration)
         {
             var dummy = new CoreTween();
-            CTcore.InstantiateVector(transform, transform.position, to, duration, LerpCoreType.Position, false, out int index);
+
+            if(transform.parent != null)
+            {
+                to = transform.parent.InverseTransformPoint(to);
+            }
+            
+            CTcore.InstantiateVector(transform, transform.localPosition, to, duration, LerpCoreType.Position, false, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -177,7 +183,13 @@ namespace CompactTween
         public static CoreTween move(GameObject gameObject, Vector3 to, float duration)
         {
             var dummy = new CoreTween();
-            CTcore.InstantiateVector(gameObject.transform, gameObject.transform.position, to, duration, LerpCoreType.Position, false, out int index);
+
+            if(gameObject.transform.parent != null)
+            {
+                to = gameObject.transform.parent.InverseTransformPoint(to);
+            }
+            
+            CTcore.InstantiateVector(gameObject.transform, gameObject.transform.localPosition, to, duration, LerpCoreType.Position, false, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -188,8 +200,15 @@ namespace CompactTween
         public static CoreTween moveX(Transform transform, float to, float duration)
         {
             var dummy = new CoreTween();
-            var pos = transform.position;
-            CTcore.InstantiateVector(transform, pos, new Vector3(to, pos.y, pos.z), duration, LerpCoreType.Position, false, out int index);
+            var pos = transform.localPosition;
+            var rto = new Vector3(to, pos.y, pos.z);
+
+            if(transform.parent != null)
+            {
+                rto = transform.parent.InverseTransformPoint(rto);
+            }
+            
+            CTcore.InstantiateVector(transform, pos, rto, duration, LerpCoreType.Position, false, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -200,8 +219,15 @@ namespace CompactTween
         public static CoreTween moveX(GameObject gameObject, float to, float duration)
         {
             var dummy = new CoreTween();
-            var pos = gameObject.transform.position;
-            CTcore.InstantiateVector(gameObject.transform, pos, new Vector3(to, pos.y, pos.z), duration, LerpCoreType.Position, false, out int index);
+            var pos = gameObject.transform.localPosition;
+            var rto = new Vector3(to, pos.y, pos.z);
+
+            if(gameObject.transform.parent != null)
+            {
+                rto = gameObject.transform.parent.InverseTransformPoint(rto);
+            }
+            
+            CTcore.InstantiateVector(gameObject.transform, pos, rto, duration, LerpCoreType.Position, false, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -212,8 +238,15 @@ namespace CompactTween
         public static CoreTween moveY(Transform transform, float to, float duration)
         {
             var dummy = new CoreTween();
-            var pos = transform.position;
-            CTcore.InstantiateVector(transform, pos, new Vector3(pos.x, to, pos.z), duration, LerpCoreType.Position, false, out int index);
+            var pos = transform.localPosition;
+            var rto = new Vector3(pos.x, to, pos.z);
+
+            if(transform.parent != null)
+            {
+                rto = transform.parent.InverseTransformPoint(rto);
+            }
+            
+            CTcore.InstantiateVector(transform, pos, rto, duration, LerpCoreType.Position, false, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -224,8 +257,15 @@ namespace CompactTween
         public static CoreTween moveY(GameObject gameObject, float to, float duration)
         {
             var dummy = new CoreTween();
-            var pos = gameObject.transform.position;
-            CTcore.InstantiateVector(gameObject.transform, pos, new Vector3(pos.x, to, pos.z), duration, LerpCoreType.Position, false, out int index);
+            var pos = gameObject.transform.localPosition;
+            var rto = new Vector3(pos.x, to, pos.z);
+
+            if(gameObject.transform.parent != null)
+            {
+                rto = gameObject.transform.parent.InverseTransformPoint(rto);
+            }
+            
+            CTcore.InstantiateVector(gameObject.transform, pos, rto, duration, LerpCoreType.Position, false, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -236,8 +276,15 @@ namespace CompactTween
         public static CoreTween moveZ(Transform transform, float to, float duration)
         {
             var dummy = new CoreTween();
-            var pos = transform.position;
-            CTcore.InstantiateVector(transform, pos, new Vector3(pos.x, pos.y, to), duration, LerpCoreType.Position, false, out int index);
+            var pos = transform.localPosition;
+            var rto = new Vector3(pos.x, pos.y, to);
+
+            if(transform.parent != null)
+            {
+                rto = transform.parent.InverseTransformPoint(rto);
+            }
+            
+            CTcore.InstantiateVector(transform, pos, rto, duration, LerpCoreType.Position, false, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -248,8 +295,15 @@ namespace CompactTween
         public static CoreTween moveZ(GameObject gameObject, float to, float duration)
         {
             var dummy = new CoreTween();
-            var pos = gameObject.transform.position;
-            CTcore.InstantiateVector(gameObject.transform, pos, new Vector3(pos.x, pos.y, to), duration, LerpCoreType.Position, false, out int index);
+            var pos = gameObject.transform.localPosition;
+            var rto = new Vector3(pos.x, pos.y, to);
+
+            if(gameObject.transform.parent != null)
+            {
+                rto = gameObject.transform.parent.InverseTransformPoint(rto);
+            }
+            
+            CTcore.InstantiateVector(gameObject.transform, pos, rto, duration, LerpCoreType.Position, false, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -260,7 +314,7 @@ namespace CompactTween
         public static CoreTween moveLocal(Transform transform, Vector3 to, float duration)
         {
             var dummy = new CoreTween();
-            CTcore.InstantiateVector(transform, transform.position, to, duration, LerpCoreType.Position, true, out int index);
+            CTcore.InstantiateVector(transform, transform.localPosition, to, duration, LerpCoreType.Position, true, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -271,7 +325,7 @@ namespace CompactTween
         public static CoreTween moveLocal(GameObject gameObject, Vector3 to, float duration)
         {
             var dummy = new CoreTween();
-            CTcore.InstantiateVector(gameObject.transform, gameObject.transform.position, to, duration, LerpCoreType.Position, true, out int index);
+            CTcore.InstantiateVector(gameObject.transform, gameObject.transform.localPosition, to, duration, LerpCoreType.Position, true, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -294,7 +348,7 @@ namespace CompactTween
         public static CoreTween moveLocalX(GameObject gameObject, float to, float duration)
         {
             var dummy = new CoreTween();
-            var pos = gameObject.transform.localPosition;
+            var pos = gameObject.transform.localPosition;            
             CTcore.InstantiateVector(gameObject.transform, pos, new Vector3(to, pos.y, pos.z), duration, LerpCoreType.Position, true, out int index);
             dummy.index = index;
             return dummy;
@@ -413,7 +467,7 @@ namespace CompactTween
         public static CoreTween moveLocalY(RectTransform rectTransform, float to, float duration)
         {
             var dummy = new CoreTween();
-            var pos = new Vector2(rectTransform.anchoredPosition3D.x, to);
+            var pos = new Vector2(rectTransform.anchoredPosition.x, to);
             CTcore.InstantiateVector(rectTransform, rectTransform.anchoredPosition, pos, duration, LerpCoreType.AnchoredPosition, true, out int index);
             dummy.index = index;
             return dummy;
@@ -450,7 +504,7 @@ namespace CompactTween
         public static CoreTween rotateAroundX(Transform transform, Vector3 target, float angle, float duration)
         {
             var dummy = new CoreTween();
-            CTcore.InstantiateRotateAround(transform, target, Vector3.right.normalized, angle, duration, false, out int index);
+            CTcore.InstantiateRotateAround(transform, target, Vector3.right, angle, duration, false, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -462,7 +516,7 @@ namespace CompactTween
         public static CoreTween rotateAroundY(Transform transform, Vector3 target, float angle, float duration)
         {
             var dummy = new CoreTween();
-            CTcore.InstantiateRotateAround(transform, target, Vector3.up.normalized, angle, duration, false, out int index);
+            CTcore.InstantiateRotateAround(transform, target, Vector3.up, angle, duration, false, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -474,7 +528,7 @@ namespace CompactTween
         public static CoreTween rotateAroundZ(Transform transform, Vector3 target, float angle, float duration)
         {
             var dummy = new CoreTween();
-            CTcore.InstantiateRotateAround(transform, target, Vector3.forward.normalized, angle, duration, false, out int index);
+            CTcore.InstantiateRotateAround(transform, target, Vector3.forward, angle, duration, false, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -499,7 +553,7 @@ namespace CompactTween
         public static CoreTween rotateAroundX(GameObject gameObject, Vector3 target, float angle, float duration)
         {
             var dummy = new CoreTween();
-            CTcore.InstantiateRotateAround(gameObject.transform, target, Vector3.right.normalized, angle, duration, false, out int index);
+            CTcore.InstantiateRotateAround(gameObject.transform, target, Vector3.right, angle, duration, false, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -511,7 +565,7 @@ namespace CompactTween
         public static CoreTween rotateAroundY(GameObject gameObject, Vector3 target, float angle, float duration)
         {
             var dummy = new CoreTween();
-            CTcore.InstantiateRotateAround(gameObject.transform, target, Vector3.up.normalized, angle, duration, false, out int index);
+            CTcore.InstantiateRotateAround(gameObject.transform, target, Vector3.up, angle, duration, false, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -523,7 +577,7 @@ namespace CompactTween
         public static CoreTween rotateAroundZ(GameObject gameObject, Vector3 target, float angle, float duration)
         {
             var dummy = new CoreTween();
-            CTcore.InstantiateRotateAround(gameObject.transform, target, Vector3.forward.normalized, angle, duration, false, out int index);
+            CTcore.InstantiateRotateAround(gameObject.transform, target, Vector3.forward, angle, duration, false, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -548,7 +602,7 @@ namespace CompactTween
         public static CoreTween rotateAroundLocalX(Transform transform, Vector3 target, float angle, float duration)
         {
             var dummy = new CoreTween();
-            CTcore.InstantiateRotateAround(transform, target, Vector3.right.normalized, angle, duration, true, out int index);
+            CTcore.InstantiateRotateAround(transform, target, Vector3.right, angle, duration, true, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -560,7 +614,7 @@ namespace CompactTween
         public static CoreTween rotateAroundLocalY(Transform transform, Vector3 target, float angle, float duration)
         {
             var dummy = new CoreTween();
-            CTcore.InstantiateRotateAround(transform, target, Vector3.up.normalized, angle, duration, true, out int index);
+            CTcore.InstantiateRotateAround(transform, target, Vector3.up, angle, duration, true, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -572,7 +626,7 @@ namespace CompactTween
         public static CoreTween rotateAroundLocalZ(Transform transform, Vector3 target, float angle, float duration)
         {
             var dummy = new CoreTween();
-            CTcore.InstantiateRotateAround(transform, target, Vector3.forward.normalized, angle, duration, true, out int index);
+            CTcore.InstantiateRotateAround(transform, target, Vector3.forward, angle, duration, true, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -597,7 +651,7 @@ namespace CompactTween
         public static CoreTween rotateAroundLocalX(GameObject gameObject, Vector3 target, float angle, float duration)
         {
             var dummy = new CoreTween();
-            CTcore.InstantiateRotateAround(gameObject.transform, target, Vector3.right.normalized, angle, duration, true, out int index);
+            CTcore.InstantiateRotateAround(gameObject.transform, target, Vector3.right, angle, duration, true, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -609,7 +663,7 @@ namespace CompactTween
         public static CoreTween rotateAroundLocalY(GameObject gameObject, Vector3 target, float angle, float duration)
         {
             var dummy = new CoreTween();
-            CTcore.InstantiateRotateAround(gameObject.transform, target, Vector3.up.normalized, angle, duration, true, out int index);
+            CTcore.InstantiateRotateAround(gameObject.transform, target, Vector3.up, angle, duration, true, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -621,7 +675,7 @@ namespace CompactTween
         public static CoreTween rotateAroundLocalZ(GameObject gameObject, Vector3 target, float angle, float duration)
         {
             var dummy = new CoreTween();
-            CTcore.InstantiateRotateAround(gameObject.transform, target, Vector3.forward.normalized, angle, duration, true, out int index);
+            CTcore.InstantiateRotateAround(gameObject.transform, target, Vector3.forward, angle, duration, true, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -652,7 +706,8 @@ namespace CompactTween
         public static CoreTween rotate(Transform transform, Vector3 direction, float angle, float duration)
         {
             var dummy = new CoreTween();
-            CTcore.InstantiateQuat(transform, direction, angle, duration, false, out int index);
+            var quat = Quaternion.AngleAxis(angle, transform.parent != null ? transform.parent.InverseTransformDirection(direction).normalized : direction.normalized);
+            CTcore.InstantiateQuat(transform, transform.localRotation * (Quaternion.Inverse(transform.parent != null ? transform.parent.rotation : transform.rotation) * quat), duration, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -663,7 +718,8 @@ namespace CompactTween
         public static CoreTween rotateX(Transform transform, float angle, float duration)
         {
             var dummy = new CoreTween();
-            CTcore.InstantiateQuat(transform, Vector3.right, angle, duration, false, out int index);
+            var quat = Quaternion.AngleAxis(angle, transform.parent != null ? transform.parent.InverseTransformDirection(Vector3.right).normalized : Vector3.right);
+            CTcore.InstantiateQuat(transform, transform.localRotation * (Quaternion.Inverse(transform.parent != null ? transform.parent.rotation : transform.rotation) * quat), duration, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -675,18 +731,22 @@ namespace CompactTween
         public static CoreTween rotateY(Transform transform, float angle, float duration)
         {
             var dummy = new CoreTween();
-            CTcore.InstantiateQuat(transform, Vector3.up, angle, duration, false, out int index);
+            var quat = Quaternion.AngleAxis(angle, transform.parent != null ? transform.parent.InverseTransformDirection(Vector3.up).normalized : Vector3.up);
+            CTcore.InstantiateQuat(transform, transform.localRotation * (Quaternion.Inverse(transform.parent != null ? transform.parent.rotation : transform.rotation) * quat), duration, out int index);
             dummy.index = index;
             return dummy;
         }
+
+        
         /// <summary>Rotates a transform along z axis in world space.</summary>
         /// <param name="transform">Transform to rotate.</param>
         /// <param name="angle">Target degree angle.</param>
-        /// <param name="duration">Duration.param>
+        /// <param name="duration">Duration.</param>
         public static CoreTween rotateZ(Transform transform, float angle, float duration)
         {
             var dummy = new CoreTween();
-            CTcore.InstantiateQuat(transform, Vector3.forward, angle, duration, false, out int index);
+            var quat = Quaternion.AngleAxis(angle, transform.parent != null ? transform.parent.InverseTransformDirection(Vector3.forward).normalized : Vector3.forward);
+            CTcore.InstantiateQuat(transform, transform.localRotation * (Quaternion.Inverse(transform.parent != null ? transform.parent.rotation : transform.rotation) * quat), duration, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -698,7 +758,8 @@ namespace CompactTween
         public static CoreTween rotate(GameObject gameObject, Vector3 direction, float angle, float duration)
         {
             var dummy = new CoreTween();
-            CTcore.InstantiateQuat(gameObject.transform, direction, angle, duration, false, out int index);
+            var quat = Quaternion.AngleAxis(angle, gameObject.transform.parent != null ? gameObject.transform.parent.InverseTransformDirection(direction).normalized : direction.normalized);
+            CTcore.InstantiateQuat(gameObject.transform, gameObject.transform.localRotation * (Quaternion.Inverse(gameObject.transform.parent.rotation) * quat), duration, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -709,7 +770,8 @@ namespace CompactTween
         public static CoreTween rotateX(GameObject gameObject, float angle, float duration)
         {
             var dummy = new CoreTween();
-            CTcore.InstantiateQuat(gameObject.transform, Vector3.right, angle, duration, false, out int index);
+            var quat = Quaternion.AngleAxis(angle, gameObject.transform.parent != null ? gameObject.transform.parent.InverseTransformDirection(Vector3.right).normalized : Vector3.right);
+            CTcore.InstantiateQuat(gameObject.transform, gameObject.transform.localRotation * (Quaternion.Inverse(gameObject.transform.parent.rotation) * quat), duration, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -720,7 +782,8 @@ namespace CompactTween
         public static CoreTween rotateY(GameObject gameObject, float angle, float duration)
         {
             var dummy = new CoreTween();
-            CTcore.InstantiateQuat(gameObject.transform, Vector3.up, angle, duration, false, out int index);
+            var quat = Quaternion.AngleAxis(angle, gameObject.transform.parent != null ? gameObject.transform.parent.InverseTransformDirection(Vector3.up).normalized : Vector3.up);
+            CTcore.InstantiateQuat(gameObject.transform, gameObject.transform.localRotation * (Quaternion.Inverse(gameObject.transform.parent.rotation) * quat), duration, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -731,7 +794,8 @@ namespace CompactTween
         public static CoreTween rotateZ(GameObject gameObject, float angle, float duration)
         {
             var dummy = new CoreTween();
-            CTcore.InstantiateQuat(gameObject.transform, Vector3.forward, angle, duration, false, out int index);
+            var quat = Quaternion.AngleAxis(angle, gameObject.transform.parent != null ? gameObject.transform.parent.InverseTransformDirection(Vector3.forward).normalized : Vector3.forward);
+            CTcore.InstantiateQuat(gameObject.transform, gameObject.transform.localRotation * (Quaternion.Inverse(gameObject.transform.parent.rotation) * quat), duration, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -743,7 +807,8 @@ namespace CompactTween
         public static CoreTween rotateLocal(Transform transform, Vector3 direction, float angle, float duration)
         {
             var dummy = new CoreTween();
-            CTcore.InstantiateQuat(transform, direction, angle, duration, true, out int index);
+            var quat = Quaternion.AngleAxis(angle, direction.normalized);
+            CTcore.InstantiateQuat(transform, quat, duration, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -754,7 +819,8 @@ namespace CompactTween
         public static CoreTween rotateLocalX(Transform transform, float angle, float duration)
         {
             var dummy = new CoreTween();
-            CTcore.InstantiateQuat(transform, Vector3.right, angle, duration, true, out int index);
+            var quat = Quaternion.AngleAxis(angle, Vector3.right);
+            CTcore.InstantiateQuat(transform, quat, duration, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -765,7 +831,8 @@ namespace CompactTween
         public static CoreTween rotateLocalY(Transform transform, float angle, float duration)
         {
             var dummy = new CoreTween();
-            CTcore.InstantiateQuat(transform, Vector3.up, angle, duration, true, out int index);
+            var quat = Quaternion.AngleAxis(angle, Vector3.up);
+            CTcore.InstantiateQuat(transform, quat, duration, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -776,7 +843,8 @@ namespace CompactTween
         public static CoreTween rotateLocalZ(Transform transform, float angle, float duration)
         {
             var dummy = new CoreTween();
-            CTcore.InstantiateQuat(transform, Vector3.forward, angle, duration, true, out int index);
+            var quat = Quaternion.AngleAxis(angle, Vector3.forward);
+            CTcore.InstantiateQuat(transform, quat, duration, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -788,7 +856,8 @@ namespace CompactTween
         public static CoreTween rotateLocal(GameObject gameObject, Vector3 direction, float angle, float duration)
         {
             var dummy = new CoreTween();
-            CTcore.InstantiateQuat(gameObject.transform, direction, angle, duration, true, out int index);
+            var quat = Quaternion.AngleAxis(angle, direction.normalized);
+            CTcore.InstantiateQuat(gameObject.transform, quat, duration, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -799,7 +868,8 @@ namespace CompactTween
         public static CoreTween rotateLocalX(GameObject gameObject, float angle, float duration)
         {
             var dummy = new CoreTween();
-            CTcore.InstantiateQuat(gameObject.transform, Vector3.right, angle, duration, true, out int index);
+            var quat = Quaternion.AngleAxis(angle, Vector3.right);
+            CTcore.InstantiateQuat(gameObject.transform, quat, duration, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -810,7 +880,8 @@ namespace CompactTween
         public static CoreTween rotateLocalY(GameObject gameObject, float angle, float duration)
         {
             var dummy = new CoreTween();
-            CTcore.InstantiateQuat(gameObject.transform, Vector3.up, angle, duration, true, out int index);
+            var quat = Quaternion.AngleAxis(angle, Vector3.up);
+            CTcore.InstantiateQuat(gameObject.transform, quat, duration, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -821,7 +892,8 @@ namespace CompactTween
         public static CoreTween rotateLocalZ(GameObject gameObject, float angle, float duration)
         {
             var dummy = new CoreTween();
-            CTcore.InstantiateQuat(gameObject.transform, Vector3.forward, angle, duration, true, out int index);
+            var quat = Quaternion.AngleAxis(angle, Vector3.forward);
+            CTcore.InstantiateQuat(gameObject.transform, quat, duration, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -921,8 +993,19 @@ namespace CompactTween
         public static CoreTween value(float from, float to, float duration, Action<float> callback)
         {
             var dummy = new CoreTween();
+            CTcore.InstantiateFloat(dummy.GetHashCode(), from, to, duration, callback, out int index);
+            dummy.index = index;
+            return dummy;
+        }
+        /// <summary>Unlike ".value", this is the normalized 0-1 range version. The input parameter will output 0 - 1 float value. \nWhen chained it will use the duration/time from the first tween instance.</summary>
+        /// <param name="duration">Duration.</param>
+        /// <param name="callback">Callback.</param>
+        /// <returns></returns>
+        public static CoreTween qvalue(float duration, Action<float> callback)
+        {
+            var dummy = new CoreTween();
 
-            CTcore.InstantiateFloat(dummy.GetHashCode(), from, to, duration, (float value) =>
+            CTcore.InstantiateFloat(dummy.GetHashCode(), 0f, 1f, duration, (float value) =>
             {
                 callback.Invoke(value);
 
@@ -930,6 +1013,19 @@ namespace CompactTween
 
             dummy.index = index;
             return dummy;
+        }
+        /// <summary>Chaining multiple values at once (not queueing). Duration/time will be taken from the 1st tween instance in this sequence.</summary>
+        /// <param name="callback">Callback.</param>
+        /// <returns></returns>
+        public static CoreTween qvalue(this CoreTween ct, Action<float> callback)
+        {
+            if(ct.getTween.mode != LerpCoreType.Float)
+            {
+                throw new Exception("CTween error : Qvalue can't be chained with different instances that's not instantiated via CTween.qvalue.");
+            }
+
+            CTcore.RegisterOnUpdate(ct.index, callback);
+            return ct;
         }
         /// <summary>Interpolates Matrix4x4 value.</summary>
         /// <param name="from">Initial value.</param>
@@ -1104,10 +1200,21 @@ namespace CompactTween
         /// <param name="rectTransform">RectTransform.</param>
         /// <param name="to">Target.</param>
         /// <param name="duration">Duration.</param>
-        public static CoreTween sizeAnchored(RectTransform rectTransform, Vector3 to, float duration)
+        public static CoreTween anchored(RectTransform rectTransform, Vector3 to, float duration)
         {
             var dummy = new CoreTween();
-            CTcore.InstantiateVector(rectTransform, rectTransform.position, to, duration, LerpCoreType.SizeDelta, true, out int index);
+            CTcore.InstantiateVector(rectTransform, rectTransform.anchoredPosition, to, duration, LerpCoreType.AnchoredPosition, true, out int index);
+            dummy.index = index;
+            return dummy;
+        }
+        /// <summary>Interpolates the size relative to the anchored point.</summary>
+        /// <param name="rectTransform">RectTransform.</param>
+        /// <param name="to">Target.</param>
+        /// <param name="duration">Duration.</param>
+        public static CoreTween anchored3D(RectTransform rectTransform, Vector3 to, float duration)
+        {
+            var dummy = new CoreTween();
+            CTcore.InstantiateVector(rectTransform, rectTransform.anchoredPosition3D, to, duration, LerpCoreType.AnchoredPosition, true, out int index);
             dummy.index = index;
             return dummy;
         }
@@ -1146,6 +1253,7 @@ namespace CompactTween
                 var col = img.color;
                 col.a = value;
                 img.color = col;
+
             }, out int index);
 
             dummy.index = index;
@@ -1169,6 +1277,7 @@ namespace CompactTween
                 var col = image.color;
                 col.a = value;
                 image.color = col;
+
             }, out int index);
 
             dummy.index = index;
@@ -1351,6 +1460,7 @@ namespace CompactTween
             {
                 var tmp = material.GetVector(propertyName);
                 material.SetVector(propertyName, ((Vector3)tmp + (Vector3)to) * tick);
+
             }, out int index);
 
             dummy.index = index;
@@ -1414,7 +1524,7 @@ namespace CompactTween
 
         /// <summary>Sets the max loop cycle for the tween to finish.</summary>
         /// <param name="loopCount">Loop count.</param>
-        public static CoreTween onLoopCount(this CoreTween ct, int loopCount)
+        public static CoreTween onLoopCount(in this CoreTween ct, int loopCount)
         {
             if (loopCount > 255 || loopCount < 0)
             {
@@ -1426,7 +1536,7 @@ namespace CompactTween
         }
         /// <summary>Smooth pinpong like loop cycle.</summary>
         /// <param name="state">Enable state.</param>
-        public static CoreTween onPingPong(this CoreTween ct, bool state)
+        public static CoreTween onPingPong(in this CoreTween ct, bool state)
         {
             if (!state)
             {
@@ -1438,7 +1548,7 @@ namespace CompactTween
         }
         /// <summary>Loop type. Clamp = linear loop cycle, pingpong is non-linear one.</summary>
         /// <param name="loopType"></param>
-        public static CoreTween onLoopType(this CoreTween ct, LoopType loopType)
+        public static CoreTween onLoopType(in this CoreTween ct, LoopType loopType)
         {
             if (loopType == LoopType.PingPong)
             {
@@ -1450,14 +1560,14 @@ namespace CompactTween
         }
         /// <summary>Callback upon completion.</summary>
         /// <param name="callback">Callback.</param>
-        public static CoreTween onComplete(this CoreTween ct, Action callback)
+        public static CoreTween onComplete(in this CoreTween ct, Action callback)
         {
             CTcore.RegisterOnComplete(ct.index, callback);
             return ct;
         }
         /// <summary>Easing function for smooth interpolation between values.</summary>
         /// <param name="ease">Easing function type. Default is liner.</param>
-        public static CoreTween onEase(this CoreTween ct, Ease ease)
+        public static CoreTween onEase(in this CoreTween ct, Ease ease)
         {
             if (ease == Ease.PingPong)
             {
@@ -1480,7 +1590,7 @@ namespace CompactTween
         }
         /// <summary>Sets the unscaledTime of tween. True = would not be affected by timeScale.</summary>
         /// <param name="state">Enable state.</param>
-        public static CoreTween onUnscaledTime(this CoreTween ct, bool state)
+        public static CoreTween onUnscaledTime(in this CoreTween ct, bool state)
         {
             if (!state)
             {
@@ -1492,14 +1602,14 @@ namespace CompactTween
         }
         /// <summary>Callback that will be invoked every frame during tweening.</summary>
         /// <param name="callback">Callback.</param>
-        public static CoreTween onUpdate(this CoreTween ct, System.Action callback)
+        public static CoreTween onUpdate(in this CoreTween ct, System.Action callback)
         {
             CTcore.RegisterOnUpdate(ct.index, value => callback.Invoke());
             return ct;
         }
         /// <summary>Callback that will be invoked every frame during tweening.</summary>
         /// <param name="callback">Callback.</param>
-        public static CoreTween onUpdate(this CoreTween ct, System.Action<float> callback)
+        public static CoreTween onUpdate(in this CoreTween ct, System.Action<float> callback)
         {
             if(ct.getTween.mode is LerpCoreType.Float)
             {
@@ -1529,7 +1639,7 @@ namespace CompactTween
         
         /// <summary>Sets the tween to be speed-based rather than duration/time based.</summary>
         /// <param name="speed">Speed value.</param>
-        public static CoreTween onSpeed(this CoreTween ct, float speed)
+        public static CoreTween onSpeed(in this CoreTween ct, float speed)
         {
             if (speed > 255)
             {
@@ -1546,7 +1656,7 @@ namespace CompactTween
         }
         /// <summary>Will be invoked on each completion of a loop cycle.</summary>
         /// <param name="state">Enable state.</param>
-        public static CoreTween onCompleteRepeat(this CoreTween ct, bool state)
+        public static CoreTween onCompleteRepeat(in this CoreTween ct, bool state)
         {
             if (!state)
             {
@@ -1607,7 +1717,7 @@ namespace CompactTween
         }
         /// <summary>Sets new point for when tweening.</summary>
         /// <param name="from">Inition point</param>
-        public static CoreTween onSetFrom(this CoreTween ct, Vector3 from)
+        public static CoreTween onSetFrom(in this CoreTween ct, Vector3 from)
         {
             if (ct.getTween.mode == LerpCoreType.Position || ct.getTween.mode == LerpCoreType.Translate)
             {
@@ -1626,7 +1736,7 @@ namespace CompactTween
         /// <summary>Sets initial point of tweening.</summary>
         /// <param name="direction">Direction of rotation.</param>
         /// <param name="angle">Degree angle</param>
-        public static CoreTween onSetFrom(this CoreTween ct, Vector3 direction, float angle)
+        public static CoreTween onSetFrom(in this CoreTween ct, Vector3 direction, float angle)
         {
             if (ct.getTween.mode != LerpCoreType.Rotation)
             {
@@ -1646,7 +1756,7 @@ namespace CompactTween
         }
         /// <summary>Halts the tweening. Similar to pause but can be chained.</summary>
         /// <param name="state">Halt state.</param>
-        public static CoreTween halt(this CoreTween ct, bool state)
+        public static CoreTween halt(in this CoreTween ct, bool state)
         {
             if (state)
                 ct.getTween.Pause();
@@ -1658,7 +1768,7 @@ namespace CompactTween
 
         /// <summary>Sets custom id.</summary>
         /// <param name="id">Custom id.</param>
-        public static CoreTween onSetId(this CoreTween ct, int id)
+        public static CoreTween onSetId(in this CoreTween ct, int id)
         {
             if (id == 0)
             {
@@ -1719,7 +1829,7 @@ namespace CompactTween
         public static CoreTween nextDelay(this CoreTween ct, float duration)
         {
             var dummy = new CoreTween();
-            CTcore.InstantiateFloat(ct.getTransform.gameObject.GetInstanceID(), 0f, 1f, duration, null, out int index, true);
+            CTcore.InstantiateFloat(ct.getTransform.gameObject.GetInstanceID(), 0f, 1f, duration, x=>{}, out int index);
             dummy.index = index;
             dummy.halt(true);
 
@@ -1736,7 +1846,7 @@ namespace CompactTween
 
         /// <summary>Sets infinite loop.</summary>
         /// <param name="state">Infinite loop enable state.</param>
-        public static CoreTween onInfinite(this CoreTween ct, bool state)
+        public static CoreTween onInfinite(in this CoreTween ct, bool state)
         {
             if (!state)
             {
@@ -1749,7 +1859,7 @@ namespace CompactTween
 
         /// <summary>Queues tween instances.</summary>
         /// <param name="nextTween">Next tween to be queued.</param>
-        public static CoreTween onEndPlayAudio(this CoreTween ct, AudioSource audioSource)
+        public static CoreTween onEndPlayAudio(in this CoreTween ct, AudioSource audioSource)
         {
             CTcore.RegisterLastOnComplete(ct.index, () =>
             {
@@ -2136,7 +2246,7 @@ namespace CompactTween
         /// <summary>Cancels all queues if any. If successful it will allocate.</summary>
         public static void CancellAllQueue() => CoreTween.TryCancelAllQueues();
         /// <summary>Canels queue.</summary>
-        public static void CancelQueue(CoreTween ct) => CoreTween.TryCancelQueues(ct.queueId);
+        public static void CancelQueue(in CoreTween ct) => CoreTween.TryCancelQueues(ct.queueId);
         /// <summary>Cancels queue.</summary>
         /// <param name="queueid">Queue id.</param>
         public static void CancelQueue(int queueid) => CoreTween.TryCancelQueues(queueid);
@@ -2194,6 +2304,22 @@ namespace CompactTween
         /// <summary>Re-initialization of the array length. Useful for when there lots of tween instances at the same time by less often resizing the internal arrays. Put this on Awake.</summary>
         /// <param name="defaultPoolLength">Length.</param>
         public static void Init(int defaultPoolLength)=> CTcore.Init(defaultPoolLength);
+        /// <summary>Scales a gameObject based on pivot point.</summary>
+        static void ScaleAround(Transform transform, Vector3 pivot, Vector3 newScale)
+        {
+            Vector3 A = transform.localPosition;
+            Vector3 B = pivot;
+        
+            Vector3 C = A - B; // diff from object pivot to desired pivot/origin
+            float RS = newScale.x / transform.localScale.x; // relative scale factor
+        
+            // calc final position post-scale
+            Vector3 FP = B + C * RS;
+        
+            // finally, actually perform the scale/translation
+            transform.localScale = newScale;
+            transform.localPosition = FP;
+        }
     }
 
     public struct CoreTween
@@ -2203,17 +2329,88 @@ namespace CompactTween
         /// <summary>Queue id.</summary>
         public int queueId;
         /// <summary>Queue list.</summary>
-        public static List<(int index, int id, int queueId, int loopCount, int loopCounter, bool pingpong)> queues = new(8);
+        static List<(int index, int id, int queueId, int loopCount, int loopCounter, bool pingpong)> queues = new(8);
+        static List<(byte counter, Vector3 laspos, List<int> indexes, Transform transform)> combines = new(8);
+        static short counter = 0;
         public CoreTween(int i = 0)
         {
             index = -1;
             queueId = -1;
             setQueueId();
         }
+        public static void updateCombine(int instanceid)
+        {
+            for(int i = 0; i < combines.Count; i++)
+            {
+                if(combines[i].transform.GetInstanceID() == instanceid)
+                {
+                    var copy = combines[i];
+                    combines[i] = (copy.counter, copy.transform.position, copy.indexes, copy.transform);
+                    return;
+                }
+            }
+        }
+        /// <summary>Adds tween instance to combine list.</summary>
+        /// <param name="id">Id.</param>
+        static void addCombine(ref CTcore core)
+        {
+            var trans = core.transform;
+
+            if(combines.Exists(x=> x.transform == trans))
+            {
+                for(int i = 0; i < combines.Count; i++)
+                {
+                    if(combines[i].transform != trans)
+                        continue;
+                    var copy = combines[i];
+                    var num = copy.counter;
+                    copy.indexes.Add(core.index);
+                    combines[i] = ((byte)(copy.counter + 1), trans.localPosition, copy.indexes, copy.transform);
+                    return;   
+                }
+            }
+
+            var comid = counter++;
+            counter += 1;
+            var lis = new List<int>();
+            lis.Add(core.id);
+            combines.Add(((byte)1, trans.localPosition, lis, core.transform));
+        }
+        /// <summary>Removes tween instance from combine list.</summary>
+        /// <param name="id">Id.</param>
+        public static void removeCombine(int instanceid)
+        {
+            for(int i = 0; i < combines.Count; i++)
+            {
+                if(combines[i].transform.GetInstanceID() == instanceid)
+                {
+                    var copy = combines[i];
+
+                    if(copy.counter == 0)
+                    {
+                        combines.RemoveAt(i);
+                    }
+                    else
+                    {
+                        for(int j = 0; j < copy.indexes.Count; j++)
+                        {
+                            if(copy.indexes[j] == CTcore.getTween(instanceid).index)
+                            {
+                                copy.indexes.RemoveAt(j);
+                                break;
+                            }
+                        }
+
+                        combines[i] = ((byte)(copy.counter - 1), copy.laspos, copy.indexes, copy.transform);
+                    }
+
+                    return;
+                }
+            }
+        }
         /// <summary>Sets the queue id.</summary>
         public void setQueueId() => queueId = GetHashCode();
         /// <summary>Checks if available in queue list.</summary>
-        /// <param name="index"></param>
         public static bool QueueContains(int index) => queues.Count > 0 && queues.Exists(x => x.index == index);
         /// <summary>Gets active tween.</summary>
         public ref CTcore getTween => ref CTcore.fcore[index];
